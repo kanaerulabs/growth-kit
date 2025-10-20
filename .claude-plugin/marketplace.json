@@ -1,0 +1,55 @@
+{
+  "name": "growth-kit-marketplace",
+  "owner": {
+    "name": "Kanaeru Labs",
+    "email": "support@kanaeru.ai"
+  },
+  "metadata": {
+    "description": "Content marketing & growth automation toolkit",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "publisher",
+      "source": "./publisher-plugin",
+      "description": "Content distribution toolkit - X/Twitter threads, LinkedIn posts, Medium articles. Accepts any input format (markdown, PDF, URL, etc.)",
+      "version": "1.0.0",
+      "author": {
+        "name": "Kanaeru Labs",
+        "email": "support@kanaeru.ai",
+        "url": "https://www.kanaeru.ai"
+      },
+      "homepage": "https://github.com/kanaerulabs/growth-kit",
+      "repository": "https://github.com/kanaerulabs/growth-kit",
+      "license": "MIT",
+      "keywords": ["blog", "marketing", "social-media", "twitter", "linkedin", "medium", "content"],
+      "commands": [
+        "./commands/x.md",
+        "./commands/linkedin.md",
+        "./commands/medium.md",
+        "./commands/devto.md",
+        "./commands/all.md"
+      ],
+      "strict": false
+    },
+    {
+      "name": "analytics",
+      "source": "./analytics-plugin",
+      "description": "Web analytics and tracking toolkit - Vercel Analytics, Google Analytics, and more",
+      "version": "1.0.0",
+      "author": {
+        "name": "Kanaeru Labs",
+        "email": "support@kanaeru.ai",
+        "url": "https://www.kanaeru.ai"
+      },
+      "homepage": "https://github.com/kanaerulabs/growth-kit",
+      "repository": "https://github.com/kanaerulabs/growth-kit",
+      "license": "MIT",
+      "keywords": ["analytics", "tracking", "vercel", "metrics"],
+      "commands": [
+        "./commands/vercel.md"
+      ],
+      "strict": false
+    }
+  ]
+}

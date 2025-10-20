@@ -1,5 +1,8 @@
 # Growth Kit
 
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/kanaerulabs/growth-kit/releases/tag/v1.0.0)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 > Turn your blog posts into social media content - automatically
 
 Stop manually converting your blog posts into tweets, LinkedIn posts, and Medium articles. Growth Kit does it for you with a single command.
@@ -41,7 +44,10 @@ Stop manually converting your blog posts into tweets, LinkedIn posts, and Medium
 Open Claude Code in your project and run:
 
 ```bash
-# Add Growth Kit marketplace
+# Add Growth Kit marketplace (latest stable version)
+/plugin marketplace add kanaerulabs/growth-kit@v1.0.0
+
+# Or use latest commit (edge/unstable)
 /plugin marketplace add kanaerulabs/growth-kit
 
 # Install plugins

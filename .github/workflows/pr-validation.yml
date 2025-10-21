@@ -119,30 +119,65 @@ jobs:
 
           echo "✅ .gitignore properly configured"
 
-      - name: Verify command content updates
+      - name: Verify modified commands match plugin structure
         run: |
-          echo "🔍 Verifying command files have expected content..."
+          echo "🔍 Verifying modified .md files will be loaded correctly..."
 
-          # Check if x.md mentions 3 versions (if this PR adds that feature)
-          if git diff origin/main...HEAD -- publisher-plugin/commands/x.md | grep -q "THREE"; then
-            echo "  ✓ x.md mentions THREE versions (feature detected)"
+          # Get list of modified .md command files
+          MODIFIED_COMMANDS=$(git diff --name-only origin/main...HEAD | grep -E "commands/.*\.md$" || true)
 
-            # Verify it mentions all 3 types
-            if grep -q "Thread" publisher-plugin/commands/x.md && \
-               grep -q "Single Long" publisher-plugin/commands/x.md && \
-               grep -q "Single Short" publisher-plugin/commands/x.md; then
-              echo "  ✓ All 3 versions documented in x.md"
-            else
-              echo "  ⚠️  x.md updated but not all 3 versions mentioned"
-            fi
+          if [ -n "$MODIFIED_COMMANDS" ]; then
+            echo "Modified command files:"
+            echo "$MODIFIED_COMMANDS"
+            echo ""
+
+            # For each modified command, verify it's referenced in marketplace.json
+            python3 << 'PYEOF'
+          import json
+          import os
+          import subprocess
+
+          # Get modified files
+          result = subprocess.run(['git', 'diff', '--name-only', 'origin/main...HEAD'],
+                                  capture_output=True, text=True)
+          modified_files = [f for f in result.stdout.strip().split('\n') if 'commands/' in f and f.endswith('.md')]
+
+          # Load marketplace.json
+          with open('.claude-plugin/marketplace.json') as f:
+              manifest = json.load(f)
+
+          # Check each modified file is referenced
+          all_valid = True
+          for mod_file in modified_files:
+              if not mod_file:
+                  continue
+
+              found = False
+              for plugin in manifest['plugins']:
+                  plugin_source = plugin['source']
+                  for cmd in plugin.get('commands', []):
+                      full_path = os.path.join(plugin_source, cmd).replace('./', '')
+                      if full_path == mod_file:
+                          found = True
+                          print(f"  ✓ {mod_file} is loaded by {plugin['name']} plugin")
+                          break
+
+              if not found:
+                  print(f"  ⚠️  {mod_file} is NOT referenced in marketplace.json")
+                  all_valid = False
+
+          if not all_valid:
+              print("\n❌ Some modified commands won't be loaded!")
+              exit(1)
+
+          print("\n✅ All modified commands are properly registered")
+          PYEOF
+
+          else
+            echo "No command files modified in this PR"
           fi
 
-          # Check if README was updated to reflect command changes
-          if git diff origin/main...HEAD -- README.md | grep -q "version"; then
-            echo "  ✓ README updated with changes"
-          fi
-
-          echo "✅ Content validation complete"
+          echo "✅ Command structure validation complete"
 
       - name: Summary
         run: |

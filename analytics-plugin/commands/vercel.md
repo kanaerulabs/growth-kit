@@ -1,4 +1,8 @@
-# Vercel Project Setup
+---
+description: Set up Vercel Analytics and Speed Insights
+argument-hint:
+tags: [vercel, analytics, monitoring]
+---
 
 Set up essential Vercel integrations for a React/Vite project.
 

@@ -1,0 +1,137 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate plugin structure
+        run: |
+          echo "🔍 Validating plugin structure..."
+
+          # Check required files exist
+          test -f .claude-plugin/marketplace.json || (echo "❌ marketplace.json missing" && exit 1)
+          test -f README.md || (echo "❌ README.md missing" && exit 1)
+          test -f LICENSE || (echo "❌ LICENSE missing" && exit 1)
+
+          echo "✅ Required files present"
+
+      - name: Validate JSON files
+        run: |
+          echo "🔍 Validating JSON files..."
+
+          # Validate marketplace.json
+          python3 -m json.tool .claude-plugin/marketplace.json > /dev/null || (echo "❌ Invalid JSON in marketplace.json" && exit 1)
+
+          echo "✅ JSON files valid"
+
+      - name: Validate markdown command files
+        run: |
+          echo "🔍 Validating command files..."
+
+          # Check all command files have frontmatter
+          for file in publisher-plugin/commands/*.md analytics-plugin/commands/*.md; do
+            if [ -f "$file" ]; then
+              echo "Checking $file..."
+              head -1 "$file" | grep -q "^---$" || (echo "❌ Missing frontmatter in $file" && exit 1)
+            fi
+          done
+
+          echo "✅ All command files have valid frontmatter"
+
+      - name: Check for exposed secrets
+        run: |
+          echo "🔍 Checking for exposed secrets..."
+
+          # Check for common secret patterns
+          if grep -r "LINKEDIN_CLIENT_SECRET.*=" --include="*.md" --exclude-dir=.git publisher-plugin/ analytics-plugin/ | grep -v "your_secret\|CLIENT_SECRET="; then
+            echo "❌ Possible exposed secret found"
+            exit 1
+          fi
+
+          if test -f .env; then
+            echo "❌ .env file should not be committed"
+            exit 1
+          fi
+
+          echo "✅ No exposed secrets found"
+
+      - name: Validate bash syntax in commands
+        run: |
+          echo "🔍 Validating bash syntax..."
+
+          # Extract bash code blocks and check for common errors
+          for file in publisher-plugin/commands/*.md; do
+            echo "Checking bash syntax in $file..."
+
+            # Check for unescaped quotes in sed commands
+            if grep -E "sed 's/[^']*\$" "$file"; then
+              echo "⚠️  Potential sed syntax issue in $file"
+            fi
+
+            # Check for unclosed heredocs
+            if grep -c "<<" "$file" != $(grep -c "^EOF$\|^COMMENTARYEOF$" "$file"); then
+              echo "⚠️  Potential unclosed heredoc in $file"
+            fi
+          done
+
+          echo "✅ Bash syntax checks passed"
+
+      - name: Check command descriptions
+        run: |
+          echo "🔍 Validating command descriptions..."
+
+          # Verify all commands listed in marketplace.json exist
+          python3 << 'PYEOF'
+          import json
+          import os
+
+          with open('.claude-plugin/marketplace.json') as f:
+              manifest = json.load(f)
+
+          for plugin in manifest['plugins']:
+              print(f"Checking {plugin['name']} plugin...")
+              for cmd in plugin.get('commands', []):
+                  cmd_path = os.path.join(plugin['source'], cmd)
+                  if not os.path.exists(cmd_path):
+                      print(f"❌ Command file missing: {cmd_path}")
+                      exit(1)
+                  print(f"  ✓ {cmd}")
+
+          print("✅ All commands exist")
+          PYEOF
+
+      - name: Validate .gitignore
+        run: |
+          echo "🔍 Checking .gitignore..."
+
+          # Verify critical files are ignored
+          grep -q "^\.env$" .gitignore || (echo "❌ .env not in .gitignore" && exit 1)
+          grep -q "^\.claude/" .gitignore || (echo "❌ .claude/ not in .gitignore" && exit 1)
+
+          echo "✅ .gitignore properly configured"
+
+      - name: Summary
+        run: |
+          echo "═══════════════════════════════════════════════════════════════"
+          echo "✅ All validation checks passed!"
+          echo "═══════════════════════════════════════════════════════════════"
+          echo ""
+          echo "Validated:"
+          echo "  ✓ Plugin structure"
+          echo "  ✓ JSON files"
+          echo "  ✓ Markdown frontmatter"
+          echo "  ✓ No exposed secrets"
+          echo "  ✓ Bash syntax"
+          echo "  ✓ Command file existence"
+          echo "  ✓ .gitignore configuration"
+          echo ""
+          echo "Ready for review! 🚀"

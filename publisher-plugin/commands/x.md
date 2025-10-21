@@ -54,32 +54,50 @@ Generate a copy-pastable X thread from any content source - blog posts, articles
    - If content appears to be in Japanese → Japanese
    - Otherwise → English
 
-4. **Generate engaging X thread** in the target language:
+4. **Generate THREE versions** in the target language:
+
+   **Version 1: Thread (5-8 posts)**
    - **For English**: Follow Kanaeru Labs' X voice (see guidelines below)
    - **For Japanese**: Use professional yet accessible Japanese tone
-   - Use actual blog content and key points
-   - Make it contextual and intelligent, not template-based
+   - Break into digestible posts (max 280 chars each)
 
-5. **Generate the thread directly** using Claude's built-in capabilities:
+   **Version 2: Single Long (Premium)**
+   - Structured format with clear sections
+   - **For Japanese**: Use 【brackets】: 【とは】【誰のため】【主な特徴】【次にすべきこと】
+   - **For English**: Use headers: **What it is:** **Who it's for:** **Key features:** **What to do next:**
+
+   **Version 3: Single Short (~280 chars)**
+   - Concise announcement
+   - 2-3 key benefits with emojis
+   - Links and hashtags
+
+5. **Generate all three versions directly** using Claude's built-in capabilities:
    - Read the blog content using Read tool
    - Extract key insights and stats from the content
-   - Create engaging thread following the guidelines below
-   - Validate character counts (max 280 per post)
+   - Create all 3 versions following the guidelines below
+   - Validate character counts
    - **PURE CLAUDE - NO external scripts, NO npm, NO dependencies**
 
-6. **Display the generated thread** to the user in terminal:
-   - Show all posts with character counts
-   - Show total thread length (e.g., "6 posts")
+6. **Display all versions** to the user in terminal:
+   - Show thread posts with character counts
+   - Show single long version
+   - Show single short version
    - Format for easy copy-pasting
 
-7. **Create HTML preview file** using Write tool:
+7. **Create tri-format HTML preview file** using Write tool:
    - **IMPORTANT**: Check if file exists first: `ls -la x-thread-[LANG].html 2>&1`
    - If file exists, use Read tool first (even just 1 line): `Read('x-thread-[LANG].html', limit=1)`
    - Then use Write tool to create/update: `x-thread-[LANG].html` in user's current directory
-   - Include all thread posts with "Copy Post" buttons
+   - **Include THREE tabs with tab switcher UI**:
+     - **Tab 1: Thread** - 5-8 posts with individual "Copy Post" buttons
+     - **Tab 2: Single Long** - Structured format with sections, one "Copy" button
+     - **Tab 3: Single Short** - Concise version (~280 chars), one "Copy" button
    - Use X branding (black theme)
+   - Tab switcher at top for easy navigation
    - Use Bash tool to open: `open x-thread-[LANG].html && open https://x.com/compose/post`
    - Works in ANY repo type (Python, Rust, Go, etc.)
+
+   **User benefits:** Choose the format that fits their audience!
 
 ---
 
@@ -219,6 +237,91 @@ AIエージェントは60秒で1,000行のコードを生成できます。
 でも人間がそれをレビューするには60分かかります。
 
 これが2025年のソフトウェア開発における新しいボトルネックです。 (1/6)
+```
+
+---
+
+## Single Post Guidelines (Premium Accounts)
+
+### Long Version - Structured Format
+
+**For Japanese** - Use 【bracket sections】:
+```
+[Title] 🚀
+
+【[Product]とは】
+[2-3 sentence description]
+
+【誰のため】
+✅ [Target user 1]
+✅ [Target user 2]
+✅ [Target user 3]
+
+【主な特徴】
+• [Feature 1]
+• [Feature 2]
+
+【時間節約/メリット】
+• [Metric 1]
+• [Metric 2]
+
+【次にすべきこと】
+1. [Step 1]
+2. [Step 2]
+
+詳細: [Blog URL]
+GitHub: [Repo URL]
+
+#Hashtags
+```
+
+**For English** - Use clear headers:
+```
+[Title] 🚀
+
+**What it is:**
+[2-3 sentence description]
+
+**Who it's for:**
+✅ [Target user 1]
+✅ [Target user 2]
+
+**Key features:**
+• [Feature 1]
+• [Feature 2]
+
+**Time savings:**
+• [Metric 1]
+• [Metric 2]
+
+**What to do next:**
+1. [Step 1]
+2. [Step 2]
+
+Full guide: [Blog URL]
+GitHub: [Repo URL]
+
+#Hashtags
+```
+
+### Short Version - Concise (~280 chars)
+
+**Structure:**
+- Title + emoji
+- 1-line description
+- 2-3 key benefits (emojis)
+- Blog link
+- 2-3 hashtags
+
+**Japanese Example:**
+```
+[Product] v1.0 リリース🚀
+[One-line description]
+✅ [Benefit 1]
+✅ [Benefit 2]
+✅ [Benefit 3]
+[URL]
+#Hashtags
 ```
 
 ---

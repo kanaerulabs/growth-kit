@@ -131,14 +131,20 @@ Add `ja` for Japanese, `en` for English (default):
 
 See exactly what you get with each command:
 
-### X/Twitter Thread
+### X/Twitter Posts
 
 ![X Thread Preview](docs/screenshots/publisher-x-preview.png)
 
-**What you get:**
-- Beautiful HTML preview with copy buttons
-- 5-8 tweet thread optimized for engagement
-- Character counts for each post
+**What you get - THREE versions in one command:**
+1. **Thread** - 5-8 tweet thread optimized for engagement
+2. **Single Long** - Structured format with sections (Premium accounts)
+3. **Single Short** - Concise ~280 char announcement
+
+**Features:**
+- Beautiful HTML preview with tab switcher
+- Copy buttons for each format
+- Character counts for all versions
+- Choose the format that fits your audience
 - Automatically opens X.com for posting
 
 ### LinkedIn Post

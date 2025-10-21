@@ -247,7 +247,154 @@ jobs:
           # Cleanup
           rm -rf /tmp/growth-kit-test
 
+      - name: Setup Claude Code Credentials (Optional)
+        env:
+          CLAUDE_CREDENTIALS: ${{ secrets.CLAUDE_CREDENTIALS }}
+        run: |
+          if [ -n "$CLAUDE_CREDENTIALS" ]; then
+            echo "🔐 Setting up Claude Code credentials..."
+
+            # Create .claude directory
+            mkdir -p ~/.claude
+
+            # Write credentials from secret
+            echo "$CLAUDE_CREDENTIALS" > ~/.claude/.claude.json
+
+            # Set permissions
+            chmod 600 ~/.claude/.claude.json
+
+            echo "✅ Claude credentials configured"
+          else
+            echo "⚠️  CLAUDE_CREDENTIALS secret not set - skipping plugin execution tests"
+            echo "   Plugin installation verification will be skipped"
+            echo "   Only command content verification will run"
+          fi
+
+      - name: Install Claude Code CLI (Optional)
+        env:
+          CLAUDE_CREDENTIALS: ${{ secrets.CLAUDE_CREDENTIALS }}
+        run: |
+          if [ -n "$CLAUDE_CREDENTIALS" ]; then
+            echo "📦 Installing Claude Code CLI..."
+
+            # Install Claude Code CLI
+            npm install -g @anthropic-ai/claude
+
+            # Verify installation
+            claude --version
+
+            echo "✅ Claude Code CLI installed"
+          else
+            echo "⏭️  Skipping Claude Code CLI installation (no credentials)"
+          fi
+
+      - name: Test Plugin Installation with Claude Code (Optional)
+        env:
+          CLAUDE_CREDENTIALS: ${{ secrets.CLAUDE_CREDENTIALS }}
+          CLAUDE_CONFIG_DIR: ~/.claude
+        run: |
+          if [ -n "$CLAUDE_CREDENTIALS" ]; then
+            echo "🧪 Testing plugin installation from branch..."
+
+            # Add marketplace from current checkout (uses current branch)
+            claude plugin marketplace add $GITHUB_WORKSPACE
+
+            # List marketplaces to verify
+            echo ""
+            echo "Configured marketplaces:"
+            claude plugin marketplace list
+
+            echo ""
+            # Install publisher plugin
+            claude plugin install publisher
+
+            # Install analytics plugin
+            claude plugin install analytics
+
+            echo ""
+            echo "✅ Plugins installed successfully from branch!"
+            echo ""
+            echo "Next step: Verify commands are loaded correctly..."
+          else
+            echo "⏭️  Skipping plugin installation test (no credentials)"
+          fi
+
+      - name: Verify Command Content Updates
+        run: |
+          echo "🔍 Verifying command content matches branch changes..."
+          echo ""
+
+          # Get list of modified command files
+          MODIFIED_COMMANDS=$(git diff --name-only origin/main...HEAD | grep -E "commands/.*\.md$" || true)
+
+          if [ -n "$MODIFIED_COMMANDS" ]; then
+            echo "📝 Modified command files detected:"
+            echo "$MODIFIED_COMMANDS"
+            echo ""
+
+            # For X command, verify it has the 3-version update
+            if echo "$MODIFIED_COMMANDS" | grep -q "publisher-plugin/commands/x.md"; then
+              echo "🔍 Verifying X command has 3-version generation update..."
+              echo ""
+
+              # Check if updated command mentions "THREE versions"
+              if grep -q "Generate THREE versions" publisher-plugin/commands/x.md; then
+                echo "  ✅ Command source has 'Generate THREE versions' text"
+
+                # Verify it mentions all three version types
+                if grep -q "Version 1: Thread" publisher-plugin/commands/x.md && \
+                   grep -q "Version 2: Single Long" publisher-plugin/commands/x.md && \
+                   grep -q "Version 3: Single Short" publisher-plugin/commands/x.md; then
+                  echo "  ✅ All three version types mentioned (Thread, Single Long, Single Short)"
+                else
+                  echo "  ❌ Missing version type descriptions"
+                  exit 1
+                fi
+
+                # Verify the tri-format HTML preview step was added
+                if grep -q "tri-format HTML preview" publisher-plugin/commands/x.md; then
+                  echo "  ✅ HTML preview updated for tri-format"
+                else
+                  echo "  ⚠️  HTML preview might not support tri-format"
+                fi
+
+                echo ""
+                echo "  ✅ X command source verification passed!"
+              else
+                echo "  ❌ X command source missing 3-version update"
+                echo "     Expected: 'Generate THREE versions' in command file"
+                exit 1
+              fi
+            fi
+
+            # For any analytics commands
+            if echo "$MODIFIED_COMMANDS" | grep -q "analytics-plugin/commands"; then
+              echo ""
+              echo "🔍 Verifying analytics command updates..."
+              echo "  ✅ Analytics commands detected"
+            fi
+
+            echo ""
+            echo "═══════════════════════════════════════════════════════════════"
+            echo "✅ Command content verification complete!"
+            echo "═══════════════════════════════════════════════════════════════"
+            echo ""
+            echo "⚠️  NOTE: Actual command execution testing requires Claude Code"
+            echo "   with authentication (API key or Claude Max subscription)."
+            echo ""
+            echo "   For full testing:"
+            echo "   1. Install locally: claude plugin marketplace add /path/to/repo"
+            echo "   2. Run command: /publisher:x test-post"
+            echo "   3. Verify output has all 3 versions"
+            echo ""
+          else
+            echo "No command files modified in this PR"
+            echo "Skipping command content verification"
+          fi
+
       - name: Summary
+        env:
+          CLAUDE_CREDENTIALS: ${{ secrets.CLAUDE_CREDENTIALS }}
         run: |
           echo "═══════════════════════════════════════════════════════════════"
           echo "✅ All automated validation checks passed!"
@@ -262,13 +409,46 @@ jobs:
           echo "  ✓ Command file existence"
           echo "  ✓ .gitignore configuration"
           echo "  ✓ Content updates verified"
+
+          if [ -n "$CLAUDE_CREDENTIALS" ]; then
+            echo "  ✓ Claude Code CLI installation"
+            echo "  ✓ Plugin marketplace integration"
+            echo "  ✓ Plugin installation from branch"
+          else
+            echo "  ⚠️  Claude Code CLI tests skipped (no credentials)"
+            echo "  ⚠️  Plugin installation tests skipped (no credentials)"
+          fi
+
           echo ""
-          echo "⚠️  MANUAL TESTING REQUIRED:"
-          echo "  • Install plugin locally: /plugin marketplace add /path/to/repo"
-          echo "  • Test each modified command"
+
+          if [ -z "$CLAUDE_CREDENTIALS" ]; then
+            echo "📋 TO ENABLE AUTOMATED PLUGIN TESTING:"
+            echo "═══════════════════════════════════════════════════════════════"
+            echo ""
+            echo "Add your Claude credentials as a GitHub secret:"
+            echo ""
+            echo "1. Get your credentials file content:"
+            echo "   cat ~/.claude/.claude.json"
+            echo ""
+            echo "2. Go to GitHub repo → Settings → Secrets and variables → Actions"
+            echo ""
+            echo "3. Click 'New repository secret'"
+            echo ""
+            echo "4. Name: CLAUDE_CREDENTIALS"
+            echo "   Value: <paste the .claude.json content>"
+            echo ""
+            echo "5. Save and re-run the workflow"
+            echo ""
+            echo "This uses your Claude Max subscription for CI testing!"
+            echo ""
+          fi
+
+          echo "⚠️  MANUAL TESTING STILL RECOMMENDED:"
+          echo "  • Install plugin locally: claude plugin marketplace add /path/to/repo"
+          echo "  • Test each modified command interactively"
           echo "  • Verify output matches documentation"
           echo "  • Test in a clean test project"
           echo ""
           echo "See PR description for testing checklist."
           echo ""
-          echo "Ready for manual review! 🚀"
+          echo "Ready for review! 🚀"

@@ -44,10 +44,7 @@ Stop manually converting your blog posts into tweets, LinkedIn posts, and Medium
 Open Claude Code in your project and run:
 
 ```bash
-# Add Growth Kit marketplace (latest stable version)
-/plugin marketplace add kanaerulabs/growth-kit@v1.0.0
-
-# Or use latest commit (edge/unstable)
+# Add Growth Kit marketplace
 /plugin marketplace add kanaerulabs/growth-kit
 
 # Install plugins

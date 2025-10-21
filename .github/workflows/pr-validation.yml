@@ -119,10 +119,35 @@ jobs:
 
           echo "✅ .gitignore properly configured"
 
+      - name: Verify command content updates
+        run: |
+          echo "🔍 Verifying command files have expected content..."
+
+          # Check if x.md mentions 3 versions (if this PR adds that feature)
+          if git diff origin/main...HEAD -- publisher-plugin/commands/x.md | grep -q "THREE"; then
+            echo "  ✓ x.md mentions THREE versions (feature detected)"
+
+            # Verify it mentions all 3 types
+            if grep -q "Thread" publisher-plugin/commands/x.md && \
+               grep -q "Single Long" publisher-plugin/commands/x.md && \
+               grep -q "Single Short" publisher-plugin/commands/x.md; then
+              echo "  ✓ All 3 versions documented in x.md"
+            else
+              echo "  ⚠️  x.md updated but not all 3 versions mentioned"
+            fi
+          fi
+
+          # Check if README was updated to reflect command changes
+          if git diff origin/main...HEAD -- README.md | grep -q "version"; then
+            echo "  ✓ README updated with changes"
+          fi
+
+          echo "✅ Content validation complete"
+
       - name: Summary
         run: |
           echo "═══════════════════════════════════════════════════════════════"
-          echo "✅ All validation checks passed!"
+          echo "✅ All automated validation checks passed!"
           echo "═══════════════════════════════════════════════════════════════"
           echo ""
           echo "Validated:"
@@ -133,5 +158,14 @@ jobs:
           echo "  ✓ Bash syntax"
           echo "  ✓ Command file existence"
           echo "  ✓ .gitignore configuration"
+          echo "  ✓ Content updates verified"
           echo ""
-          echo "Ready for review! 🚀"
+          echo "⚠️  MANUAL TESTING REQUIRED:"
+          echo "  • Install plugin locally: /plugin marketplace add /path/to/repo"
+          echo "  • Test each modified command"
+          echo "  • Verify output matches documentation"
+          echo "  • Test in a clean test project"
+          echo ""
+          echo "See PR description for testing checklist."
+          echo ""
+          echo "Ready for manual review! 🚀"

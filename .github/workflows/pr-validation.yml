@@ -319,77 +319,68 @@ jobs:
             echo "⏭️  Skipping plugin installation test (no credentials)"
           fi
 
-      - name: Verify Command Content Updates
+      - name: Verify Installed Plugins Match Source
+        env:
+          CLAUDE_CREDENTIALS: ${{ secrets.CLAUDE_CREDENTIALS }}
         run: |
-          echo "🔍 Verifying command content matches branch changes..."
-          echo ""
-
-          # Get list of modified command files
-          MODIFIED_COMMANDS=$(git diff --name-only origin/main...HEAD | grep -E "commands/.*\.md$" || true)
-
-          if [ -n "$MODIFIED_COMMANDS" ]; then
-            echo "📝 Modified command files detected:"
-            echo "$MODIFIED_COMMANDS"
+          if [ -n "$CLAUDE_CREDENTIALS" ]; then
+            echo "🔍 Verifying installed plugins match PR source files..."
             echo ""
 
-            # For X command, verify it has the 3-version update
-            if echo "$MODIFIED_COMMANDS" | grep -q "publisher-plugin/commands/x.md"; then
-              echo "🔍 Verifying X command has 3-version generation update..."
+            # Get list of modified command files
+            MODIFIED_COMMANDS=$(git diff --name-only origin/main...HEAD | grep -E "commands/.*\.md$" || true)
+
+            if [ -n "$MODIFIED_COMMANDS" ]; then
+              echo "📝 Modified command files:"
+              echo "$MODIFIED_COMMANDS"
               echo ""
 
-              # Check if updated command mentions "THREE versions"
-              if grep -q "Generate THREE versions" publisher-plugin/commands/x.md; then
-                echo "  ✅ Command source has 'Generate THREE versions' text"
+              # Compare each modified command file with installed version
+              ALL_MATCH=true
+              for cmd_file in $MODIFIED_COMMANDS; do
+                # Extract plugin name and command path
+                PLUGIN_NAME=$(echo "$cmd_file" | cut -d'/' -f1 | sed 's/-plugin$//')
+                CMD_PATH=$(echo "$cmd_file" | sed 's/^[^/]*-plugin\///')
 
-                # Verify it mentions all three version types
-                if grep -q "Version 1: Thread" publisher-plugin/commands/x.md && \
-                   grep -q "Version 2: Single Long" publisher-plugin/commands/x.md && \
-                   grep -q "Version 3: Single Short" publisher-plugin/commands/x.md; then
-                  echo "  ✅ All three version types mentioned (Thread, Single Long, Single Short)"
+                # Find installed command file in Claude's plugin directory
+                INSTALLED_FILE=$(find ~/.claude/plugins -path "*/${PLUGIN_NAME}@growth-kit-marketplace/${CMD_PATH}" 2>/dev/null | head -1)
+
+                if [ -n "$INSTALLED_FILE" ]; then
+                  echo "Comparing: $cmd_file"
+                  echo "  Source: $GITHUB_WORKSPACE/$cmd_file"
+                  echo "  Installed: $INSTALLED_FILE"
+
+                  # Compare files
+                  if diff -q "$GITHUB_WORKSPACE/$cmd_file" "$INSTALLED_FILE" >/dev/null 2>&1; then
+                    echo "  ✅ Files match exactly"
+                  else
+                    echo "  ❌ Files differ!"
+                    echo ""
+                    echo "Differences:"
+                    diff "$GITHUB_WORKSPACE/$cmd_file" "$INSTALLED_FILE" || true
+                    ALL_MATCH=false
+                  fi
+                  echo ""
                 else
-                  echo "  ❌ Missing version type descriptions"
-                  exit 1
+                  echo "⚠️  Could not find installed file for: $cmd_file"
+                  echo ""
                 fi
+              done
 
-                # Verify the tri-format HTML preview step was added
-                if grep -q "tri-format HTML preview" publisher-plugin/commands/x.md; then
-                  echo "  ✅ HTML preview updated for tri-format"
-                else
-                  echo "  ⚠️  HTML preview might not support tri-format"
-                fi
-
-                echo ""
-                echo "  ✅ X command source verification passed!"
+              if [ "$ALL_MATCH" = true ]; then
+                echo "═══════════════════════════════════════════════════════════════"
+                echo "✅ All installed plugin files match PR source exactly!"
+                echo "═══════════════════════════════════════════════════════════════"
               else
-                echo "  ❌ X command source missing 3-version update"
-                echo "     Expected: 'Generate THREE versions' in command file"
+                echo "❌ Installed files do not match source!"
                 exit 1
               fi
+            else
+              echo "No command files modified in this PR"
             fi
-
-            # For any analytics commands
-            if echo "$MODIFIED_COMMANDS" | grep -q "analytics-plugin/commands"; then
-              echo ""
-              echo "🔍 Verifying analytics command updates..."
-              echo "  ✅ Analytics commands detected"
-            fi
-
-            echo ""
-            echo "═══════════════════════════════════════════════════════════════"
-            echo "✅ Command content verification complete!"
-            echo "═══════════════════════════════════════════════════════════════"
-            echo ""
-            echo "⚠️  NOTE: Actual command execution testing requires Claude Code"
-            echo "   with authentication (API key or Claude Max subscription)."
-            echo ""
-            echo "   For full testing:"
-            echo "   1. Install locally: claude plugin marketplace add /path/to/repo"
-            echo "   2. Run command: /publisher:x test-post"
-            echo "   3. Verify output has all 3 versions"
-            echo ""
           else
-            echo "No command files modified in this PR"
-            echo "Skipping command content verification"
+            echo "⏭️  Skipping installed file verification (no credentials)"
+            echo "   Plugin installation was skipped"
           fi
 
       - name: Summary

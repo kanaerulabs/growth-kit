@@ -278,7 +278,7 @@ jobs:
             echo "📦 Installing Claude Code CLI..."
 
             # Install Claude Code CLI
-            npm install -g @anthropic-ai/claude
+            npm install -g @anthropic-ai/claude-code
 
             # Verify installation
             claude --version

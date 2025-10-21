@@ -1,0 +1,1815 @@
+From c975712915155db3fa9388f3ce99d21a86cf75ea Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Tue, 21 Oct 2025 02:33:03 +0000
+Subject: [PATCH] feat: Add Growth Kit marketplace plugins for content
+ marketing automation
+
+Add two new marketplace plugins from Kanaeru Labs' Growth Kit:
+
+1. **growth-kit-publisher**: Content distribution toolkit
+   - Commands for X/Twitter thread generation
+   - LinkedIn post creation with media support
+   - Medium article conversion
+   - Dev.to RSS feed generation
+   - Multi-platform publishing with `/all` command
+   - Supports markdown, PDF, URL, and plain text inputs
+
+2. **growth-kit-analytics**: Web analytics toolkit
+   - Vercel Analytics setup automation
+   - Future expansion for Google Analytics and more
+
+New command categories:
+- `cli-tool/components/commands/marketing/` - Social media and content distribution
+- `cli-tool/components/commands/analytics/` - Analytics and tracking
+
+Source: https://github.com/kanaerulabs/growth-kit
+License: MIT
+Author: Kanaeru Labs (support@kanaeru.ai)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+---
+ .claude-plugin/marketplace.json               |  42 ++
+ .../components/commands/analytics/vercel.md   |  30 +
+ cli-tool/components/commands/marketing/all.md | 117 ++++
+ .../components/commands/marketing/devto.md    | 261 ++++++++
+ .../components/commands/marketing/linkedin.md | 555 ++++++++++++++++++
+ .../components/commands/marketing/medium.md   | 367 ++++++++++++
+ cli-tool/components/commands/marketing/x.md   | 348 +++++++++++
+ 7 files changed, 1720 insertions(+)
+ create mode 100644 cli-tool/components/commands/analytics/vercel.md
+ create mode 100644 cli-tool/components/commands/marketing/all.md
+ create mode 100644 cli-tool/components/commands/marketing/devto.md
+ create mode 100644 cli-tool/components/commands/marketing/linkedin.md
+ create mode 100644 cli-tool/components/commands/marketing/medium.md
+ create mode 100644 cli-tool/components/commands/marketing/x.md
+
+diff --git a/.claude-plugin/marketplace.json b/.claude-plugin/marketplace.json
+index 8728fcb..7c3d71e 100644
+--- a/.claude-plugin/marketplace.json
++++ b/.claude-plugin/marketplace.json
+@@ -246,6 +246,48 @@
+         "./cli-tool/components/mcps/productivity/notion-integration.json",
+         "./cli-tool/components/mcps/productivity/linear-integration.json"
+       ]
++    },
++    {
++      "name": "growth-kit-publisher",
++      "source": "./",
++      "description": "Content distribution toolkit - X/Twitter threads, LinkedIn posts, Medium articles. Accepts any input format (markdown, PDF, URL, etc.)",
++      "version": "1.0.0",
++      "author": {
++        "name": "Kanaeru Labs",
++        "email": "support@kanaeru.ai",
++        "url": "https://www.kanaeru.ai"
++      },
++      "homepage": "https://github.com/kanaerulabs/growth-kit",
++      "repository": "https://github.com/kanaerulabs/growth-kit",
++      "license": "MIT",
++      "keywords": ["blog", "marketing", "social-media", "twitter", "linkedin", "medium", "content", "growth"],
++      "strict": false,
++      "commands": [
++        "./cli-tool/components/commands/marketing/x.md",
++        "./cli-tool/components/commands/marketing/linkedin.md",
++        "./cli-tool/components/commands/marketing/medium.md",
++        "./cli-tool/components/commands/marketing/devto.md",
++        "./cli-tool/components/commands/marketing/all.md"
++      ]
++    },
++    {
++      "name": "growth-kit-analytics",
++      "source": "./",
++      "description": "Web analytics and tracking toolkit - Vercel Analytics, Google Analytics, and more",
++      "version": "1.0.0",
++      "author": {
++        "name": "Kanaeru Labs",
++        "email": "support@kanaeru.ai",
++        "url": "https://www.kanaeru.ai"
++      },
++      "homepage": "https://github.com/kanaerulabs/growth-kit",
++      "repository": "https://github.com/kanaerulabs/growth-kit",
++      "license": "MIT",
++      "keywords": ["analytics", "tracking", "vercel", "metrics", "growth"],
++      "strict": false,
++      "commands": [
++        "./cli-tool/components/commands/analytics/vercel.md"
++      ]
+     }
+   ]
+ }
+diff --git a/cli-tool/components/commands/analytics/vercel.md b/cli-tool/components/commands/analytics/vercel.md
+new file mode 100644
+index 0000000..652a6cc
+--- /dev/null
++++ b/cli-tool/components/commands/analytics/vercel.md
+@@ -0,0 +1,30 @@
++# Vercel Project Setup
++
++Set up essential Vercel integrations for a React/Vite project.
++
++## Tasks
++
++1. **Install Vercel Packages**
++   - Install @vercel/analytics
++   - Install @vercel/speed-insights
++
++2. **Add Components to App**
++   - Import Analytics and SpeedInsights from their respective packages
++   - Add both components to the main App component (typically in src/App.tsx or src/main.tsx)
++   - For React projects, use `/react` imports (not `/next`)
++
++3. **Create vercel.json for SPA Routing**
++   - Create vercel.json in project root
++   - Add rewrite rules to serve index.html for all routes
++   - This fixes 404 errors when accessing routes directly
++
++4. **Verify Setup**
++   - Check that both components are rendered in the app
++   - Test that direct route access works without 404s
++
++## Expected Output
++
++After running this command, the project should have:
++- Analytics tracking configured
++- Speed Insights monitoring configured
++- SPA routing properly configured for Vercel deployment
+diff --git a/cli-tool/components/commands/marketing/all.md b/cli-tool/components/commands/marketing/all.md
+new file mode 100644
+index 0000000..bf59aca
+--- /dev/null
++++ b/cli-tool/components/commands/marketing/all.md
+@@ -0,0 +1,117 @@
++---
++description: Generate content for all platforms (X, LinkedIn, Medium, Dev.to) from a single input
++argument-hint: <input> [lang]
++tags: [x, linkedin, medium, devto, social, blog, content, distribution]
++---
++
++Generate copy-pastable content for all social media platforms from a single input by running all publisher commands in parallel.
++
++**Usage:** `$ARGUMENTS`
++
++**Input:** Pass the same arguments you would use for individual commands - slug, file path, URL, etc.
++
++---
++
++## Process
++
++1. **Parse Arguments and Language Detection**
++   - Extract the full arguments string: `$ARGUMENTS`
++   - Detect language from arguments:
++     - If ends with `ja` → Japanese content
++     - If ends with `en` → English content
++     - If ends with `both` → Generate for both languages
++     - Default → English if no language specified
++   - Example: `2025-10-06-my-post ja` → Japanese version
++
++2. **Run All Publisher Commands SEQUENTIALLY**
++
++   **CRITICAL:** Execute commands ONE AT A TIME, waiting for each to complete before starting the next:
++
++   ```
++   // Step 1: Run X thread generation
++   SlashCommand("/publisher:x $ARGUMENTS")
++   // Wait for completion, then...
++
++   // Step 2: Run LinkedIn post generation
++   SlashCommand("/publisher:linkedin $ARGUMENTS")
++   // Wait for completion, then...
++
++   // Step 3: Run Medium article generation
++   SlashCommand("/publisher:medium $ARGUMENTS")
++   // Wait for completion, then...
++
++   // Step 4: Run Dev.to RSS generation
++   SlashCommand("/publisher:devto")
++   ```
++
++   **IMPORTANT:** Run commands in SEPARATE messages, waiting for each command to fully complete before proceeding to the next. This ensures stability and prevents resource contention.
++
++3. **Auto-Open Browser Tabs for Immediate Action**
++
++   All commands will process the input and automatically open the necessary tabs:
++   - **X**: Opens HTML preview with copy buttons for each post + X.com compose
++   - **LinkedIn**: Opens draft in LinkedIn feed + browser tab to review
++   - **Medium**: Opens HTML with one-click copy + Medium editor tab
++   - **Dev.to**: Opens Dev.to settings page + generates RSS file
++
++4. **Summary with Clear Next Actions**
++
++   Once all commands complete sequentially, provide a detailed action summary:
++   ```
++   ✅ ALL PLATFORMS GENERATED SEQUENTIALLY
++   ════════════════════════════════════════
++
++   📱 X Thread
++      ↳ HTML preview opened with thread
++      ↳ X.com compose page opened in browser
++      ↳ Click "Copy Post" buttons to copy each post
++      ↳ Post to X using thread composer
++
++   💼 LinkedIn Post
++      ↳ Draft created and LinkedIn opened
++      ↳ Navigate to your drafts to review
++      ↳ Add any final touches and click "Post"
++
++   📝 Medium Article
++      ↳ HTML preview opened with one-click copy
++      ↳ Medium editor opened in new tab
++      ↳ Click to copy entire article, then paste in Medium
++
++   🔗 Dev.to RSS Feed
++      ↳ RSS file generated: public/rss-devto.xml
++      ↳ Settings page opened
++      ↳ Add RSS URL to "Publishing from RSS" section
++
++   ⚡ All browser tabs opened for immediate action!
++   ```
++
++---
++
++## Example Usage
++
++```bash
++# Generate for all platforms (English - default)
++/publisher:all 2025-10-13-my-post
++/publisher:all 2025-10-13-my-post en
++
++# Generate for all platforms (Japanese)
++/publisher:all 2025-10-13-my-post ja
++
++# Generate for BOTH languages simultaneously
++/publisher:all 2025-10-13-my-post both
++
++# From a file path (with language)
++/publisher:all path/to/article.md ja
++
++# From a URL (auto-detects language from content)
++/publisher:all https://myblog.com/my-post
++```
++
++---
++
++## Implementation Notes
++
++- **Single source of truth:** Each platform command handles its own input detection and generation logic
++- **Sequential execution:** Commands run one at a time to ensure stability and prevent resource contention
++- **No duplication:** Changes to individual platform logic automatically apply when using `/publisher:all`
++- **Extensibility:** Adding new platforms just requires adding another SlashCommand call in the sequence
+diff --git a/cli-tool/components/commands/marketing/devto.md b/cli-tool/components/commands/marketing/devto.md
+new file mode 100644
+index 0000000..9f68ed0
+--- /dev/null
++++ b/cli-tool/components/commands/marketing/devto.md
+@@ -0,0 +1,261 @@
++---
++description: Generate Dev.to-optimized RSS feed for automatic article import
++tags: [devto, rss, blog, syndication]
++---
++
++Generate a Dev.to-optimized RSS feed that can be used to automatically import your blog posts to Dev.to.
++
++**What this does:** Creates an RSS feed with HTML-encoded content that Dev.to can import and convert to their markdown format.
++
++---
++
++## Process
++
++### 1. Understand the Blog Structure
++
++**Scan the codebase to understand:**
++- Where are markdown blog posts stored?
++- What frontmatter format is used?
++- What's the blog base URL?
++- Where are images/diagrams located?
++
++**Common blog structures:**
++- `src/content/blog/posts/{en,ja}/*.md`
++- `content/blog/*.md`
++- `posts/*.md`
++- `blog/*.md`
++
++### 2. Read All Blog Posts
++
++**Use Glob to find all markdown files:**
++- Search pattern: `**/*.md` in blog directories
++- Read each file with Read tool
++- Extract frontmatter (title, description, date, author)
++- Extract markdown content
++
++**For each post:**
++```typescript
++{
++  title: string,
++  description: string,
++  date: string,
++  author: string,
++  slug: string,
++  content: string (markdown),
++  url: string (full blog post URL)
++}
++```
++
++### 3. Convert Markdown to HTML
++
++**Dev.to Requirements:**
++- Content must be HTML (in `<content:encoded>` field)
++- All URLs must be absolute (not relative)
++- Images must use absolute URLs
++- Dev.to will convert the HTML back to markdown on their end
++
++**Conversion process:**
++- Convert markdown to HTML (use marked.js if available, or simple conversion)
++- Make all image URLs absolute
++- Make all links absolute
++- Preserve code blocks and formatting
++
++### 4. Generate RSS Feed
++
++**Create XML file with RSS 2.0 format:**
++
++```xml
++<?xml version="1.0" encoding="UTF-8"?>
++<rss version="2.0"
++     xmlns:content="http://purl.org/rss/1.0/modules/content/"
++     xmlns:dc="http://purl.org/dc/elements/1.1/"
++     xmlns:atom="http://www.w3.org/2005/Atom">
++  <channel>
++    <title>Blog Title</title>
++    <description>Blog Description</description>
++    <link>https://yourblog.com</link>
++    <atom:link href="https://yourblog.com/rss-devto.xml" rel="self" type="application/rss+xml"/>
++    <language>en</language>
++
++    <item>
++      <title>Post Title</title>
++      <link>https://yourblog.com/blog/post-slug</link>
++      <guid>https://yourblog.com/blog/post-slug</guid>
++      <pubDate>Mon, 01 Jan 2025 00:00:00 GMT</pubDate>
++      <description>Post description</description>
++      <content:encoded><![CDATA[
++        <!-- HTML content here with absolute URLs -->
++      ]]></content:encoded>
++      <dc:creator>Author Name</dc:creator>
++    </item>
++
++    <!-- More items... -->
++  </channel>
++</rss>
++```
++
++### 5. Save and Output
++
++**Save the RSS feed:**
++- File location: `public/rss-devto.xml` (or project root)
++- Ensure proper XML formatting
++- Validate the feed structure
++
++**Auto-open Dev.to settings:**
++```bash
++# Automatically open Dev.to RSS settings page
++open https://dev.to/settings/extensions
++```
++
++**Display to user with clear actions:**
++```
++✅ Dev.to RSS feed generated & settings opened!
++════════════════════════════════════════
++
++📄 File Created: public/rss-devto.xml
++🔗 Feed URL: https://yourblog.com/rss-devto.xml
++🌐 Browser: Dev.to settings page opened
++
++📋 SIMPLE Next Steps:
++  1️⃣ Deploy your site (RSS needs to be live)
++  2️⃣ Dev.to settings is now open in browser
++  3️⃣ Scroll to "Publishing from RSS" section
++  4️⃣ Paste: https://yourblog.com/rss-devto.xml
++  5️⃣ Click "Submit" - posts will auto-import!
++
++📝 Posts included: X articles
++  - Article 1 title
++  - Article 2 title
++  - Article 3 title
++
++💡 TIP: Dev.to checks RSS every ~30 minutes for new content
++```
++
++---
++
++## Dev.to RSS Import Setup
++
++Once the RSS feed is generated and deployed:
++
++1. **Go to Dev.to Settings**
++   - Visit: https://dev.to/settings/extensions
++   - Scroll to "Publishing from RSS" section
++
++2. **Add Your RSS Feed**
++   - Enter: `https://yourblog.com/rss-devto.xml`
++   - Click "Submit"
++
++3. **Configure Import Settings**
++   - Choose: "Publish immediately" or "Save as draft"
++   - Set canonical URL (points back to your blog)
++
++4. **Automatic Syncing**
++   - Dev.to checks your RSS feed periodically
++   - New posts are automatically imported
++   - Updates to existing posts are NOT synced (manual edits on Dev.to remain)
++
++---
++
++## Key Differences from Regular RSS
++
++**Dev.to-Optimized RSS:**
++- Uses HTML in `<content:encoded>` (not plain markdown)
++- All URLs are absolute (no relative paths)
++- Includes `<dc:creator>` for author attribution
++- Uses `<guid>` for unique identification
++
++**Regular RSS:**
++- May use plain text or summary in description
++- Can have relative URLs
++- May not include full HTML content
++
++---
++
++## Troubleshooting
++
++**Q: Dev.to isn't importing my posts?**
++- Check RSS feed is publicly accessible
++- Validate XML syntax
++- Ensure all URLs are absolute
++- Check pubDate format (RFC 822)
++
++**Q: Images not showing on Dev.to?**
++- Ensure image URLs are absolute (https://...)
++- Images must be publicly accessible
++- Dev.to may cache images
++
++**Q: Want to update an existing post?**
++- RSS updates don't sync to Dev.to after initial import
++- You must manually edit on Dev.to for updates
++
++---
++
++## Example Output
++
++After running this command, you'll have:
++
++```
++public/rss-devto.xml
++```
++
++With content like:
++
++```xml
++<?xml version="1.0" encoding="UTF-8"?>
++<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
++  <channel>
++    <title>Your Blog</title>
++    <link>https://yourblog.com</link>
++    <item>
++      <title>How to Build AI Agents</title>
++      <link>https://yourblog.com/blog/2025-01-15-ai-agents</link>
++      <guid>https://yourblog.com/blog/2025-01-15-ai-agents</guid>
++      <pubDate>Wed, 15 Jan 2025 00:00:00 GMT</pubDate>
++      <description>Learn how to build production-ready AI agents</description>
++      <content:encoded><![CDATA[
++        <h1>How to Build AI Agents</h1>
++        <p>AI agents are transforming...</p>
++        <img src="https://yourblog.com/images/diagram.png" alt="Architecture" />
++        <!-- Full HTML content -->
++      ]]></content:encoded>
++    </item>
++  </channel>
++</rss>
++```
++
++---
++
++## Implementation Notes
++
++**DO NOT use npm scripts.** Generate the RSS feed directly using:
++- Glob tool to find markdown files
++- Read tool to parse frontmatter and content
++- Built-in text processing to convert markdown → HTML
++- Write tool to save `public/rss-devto.xml`
++
++**Date formatting:** Use RFC 822 format for `<pubDate>`:
++
++**CRITICAL: For bash scripts, use bash date command** (NOT JavaScript):
++```bash
++# Convert YYYY-MM-DD to RFC 822 in bash
++date -u -d "2025-01-15" "+%a, %d %b %Y %H:%M:%S GMT"
++# Output: "Mon, 15 Jan 2025 00:00:00 GMT"
++
++# Or for current date:
++date -u "+%a, %d %b %Y %H:%M:%S GMT"
++```
++
++**If generating with TypeScript/Node** (using npx tsx):
++```javascript
++new Date(post.date).toUTCString()
++// Output: "Mon, 15 Jan 2025 00:00:00 GMT"
++```
++
++**DO NOT** use `new Date()` syntax in bash heredocs - it will cause "Bad substitution" errors!
++
++**URL construction:**
++- Detect base URL from blog structure or ask user
++- Construct: `${baseUrl}/blog/${slug}`
++- Ensure all image paths are absolute
++
++**Limit to recent posts:** Generate RSS for last 10-20 posts (Dev.to recommendation)
+diff --git a/cli-tool/components/commands/marketing/linkedin.md b/cli-tool/components/commands/marketing/linkedin.md
+new file mode 100644
+index 0000000..f60ca62
+--- /dev/null
++++ b/cli-tool/components/commands/marketing/linkedin.md
+@@ -0,0 +1,555 @@
++---
++description: Create a LinkedIn post from any content source
++argument-hint: <input> [lang] [custom-file-path]
++tags: [linkedin, social, blog, i18n]
++---
++
++Create a LinkedIn post from any content source - blog posts, articles, PDFs, URLs, or plain text.
++
++**Usage:** `$ARGUMENTS`
++
++**Optional custom file attachment:**
++```bash
++# Auto-generate PDF from ALL blog diagrams (default)
++/publisher:linkedin my-post
++
++# Attach your own image or PDF
++/publisher:linkedin my-post en path/to/image.png
++/publisher:linkedin my-post en path/to/report.pdf
++```
++
++**Media attachment (zero dependencies!):**
++- **With Pillow**: Generates PDF from all diagrams → single file
++- **Without Pillow**: Uploads all diagrams as separate images → works everywhere!
++- **Custom file**: Just provide the path → always works
++- **No install required** for the fallback option!
++
++**IMPORTANT:** LinkedIn's "Little Text Format" treats certain characters as special syntax.
++The following characters are automatically escaped: `( ) { } [ ] < > @ | ~ _ * #`
++
++**DO NOT manually escape these characters in your commentary** - Claude handles escaping automatically using bash/sed.
++Pass raw text with parentheses, hashtags, etc. directly.
++
++**Process:**
++
++1. **Parse Input Arguments**
++   - Extract content input, optional language parameter, and optional custom file path
++   - Examples:
++     - `2025-10-06-my-post` (slug only, default English)
++     - `2025-10-06-my-post ja` (slug with Japanese)
++     - `2025-10-06-my-post en path/to/custom.png` (with custom file)
++     - `path/to/article.md` (file path)
++     - `https://myblog.com/post` (URL)
++
++2. **Universal Input Detection**
++
++   **If input looks like a file path** (contains `/` or file extension):
++   - Use Read tool to check if file exists
++   - Detect format by extension:
++     - `.md` / `.mdx` → Parse markdown with frontmatter (extract title, description, body, metadata)
++     - `.pdf` → Inform user PDF parsing is limited, suggest converting to markdown first
++     - `.docx` → Inform user DOCX parsing is limited, suggest converting to markdown first
++     - `.html` → Read and extract main content, strip HTML tags
++     - `.txt` → Read as plain text
++     - `.json` → Parse JSON and extract relevant fields
++   - Extract: title, description, body content, metadata
++
++   **If input looks like a URL** (starts with `http://` or `https://`):
++   - Use WebFetch tool to retrieve the page
++   - Prompt: "Extract the main article content, title, and description from this page"
++   - Parse and clean the text
++
++   **If input is a slug** (no `/` and no protocol):
++   - Search codebase using Glob: `**/*${input}*.md`
++   - Common patterns to check:
++     - `src/content/blog/posts/{en,ja}/*${input}*.md`
++     - `content/blog/*${input}*.md`
++     - `posts/*${input}*.md`
++     - `blog/*${input}*.md`
++   - If language specified, prioritize matching language folder
++   - Use Read tool to parse markdown file with frontmatter
++
++3. **Determine Language** (default: English):
++   - If user explicitly specifies "ja" → Japanese
++   - If user explicitly specifies "en" → English
++   - If file path contains `/ja/` → Japanese
++   - If content appears to be in Japanese → Japanese
++   - Otherwise → English
++
++4. **Generate engaging LinkedIn commentary** in the target language:
++   - **For English**: Follow professional thought leadership voice (see examples below)
++   - **For Japanese**: Use professional Japanese business tone (敬語), include article link
++   - Use actual blog content and key points
++   - Make it contextual and intelligent, not template-based
++
++5. **Handle file attachment**:
++
++   **If custom file path provided** (third argument):
++   - Use the specified file path (e.g., `path/to/image.png` or `path/to/report.pdf`)
++   - Verify file exists using Read tool
++   - Supported formats: `.png`, `.jpg`, `.jpeg`, `.pdf`
++   - Use this file for LinkedIn media upload
++
++   **If no custom file specified** (default behavior):
++   - Auto-detect blog diagrams:
++     - English: `public/diagrams/[SLUG]-0-en-light.png`
++     - Japanese: `public/diagrams/[SLUG]-0-ja-light.png`
++   - Script will auto-generate PDF from diagrams if found
++   - Commentary MUST include article URL when diagrams exist
++
++6. **Create the draft** using pure Bash + curl:
++
++   **Truly Universal**: Works in Python, Rust, Go, JavaScript - ANY repo type!
++   **Requirements**: Only `bash` and `curl` (standard on all systems)
++
++   **Process**:
++   a. Check if `.env` file exists (use Read tool):
++      - Look for `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET`, `LINKEDIN_ACCESS_TOKEN`
++      - If missing, guide user to create `.env` from `.env.example`
++
++   b. If no access token, help user get one:
++      - Build OAuth URL with proper parameters
++      - Tell user to visit URL and authorize
++      - User will paste back the authorization code
++      - Exchange code for token using Bash + curl
++      - Update `.env` file using Edit tool to save token
++
++   c. Prepare commentary for JSON (pure bash):
++      ```bash
++      # Save commentary to temp file first
++      cat > /tmp/linkedin-commentary-raw.txt << 'COMMENTARYEOF'
++[YOUR COMMENTARY TEXT HERE]
++COMMENTARYEOF
++
++      # Escape for JSON only (quotes and backslashes)
++      # DO NOT escape LinkedIn characters - they work fine in API!
++      sed 's/\\/\\\\/g; s/"/\\"/g' /tmp/linkedin-commentary-raw.txt > /tmp/linkedin-json-ready.txt
++
++      # Read escaped text
++      COMMENTARY_TEXT=$(cat /tmp/linkedin-json-ready.txt)
++      ```
++      **IMPORTANT**: Only escape for JSON (quotes, backslashes).
++      LinkedIn character escaping `( ) #` etc. is NOT needed for the REST API - only for UI input!
++
++   c2. Prepare media file (PDF from all diagrams OR custom file):
++      ```bash
++      # Determine which file to upload (custom file takes precedence)
++      MEDIA_FILE=""
++      MEDIA_URN=""
++      FILE_TYPE=""
++
++      # Check if user provided custom file path (3rd argument)
++      if [ -n "$CUSTOM_FILE_PATH" ] && [ -f "$CUSTOM_FILE_PATH" ]; then
++        MEDIA_FILE="$CUSTOM_FILE_PATH"
++        FILE_TYPE=$(echo "$CUSTOM_FILE_PATH" | grep -o '\.[^.]*$')
++        echo "📎 Using custom file: $CUSTOM_FILE_PATH"
++
++      # Otherwise, generate PDF from ALL blog diagrams
++      else
++        # Find all diagrams for this blog post
++        DIAGRAM_COUNT=$(ls public/diagrams/${SLUG}-*-${LANG}-light.png 2>/dev/null | wc -l)
++
++        if [ "$DIAGRAM_COUNT" -gt 0 ]; then
++          echo "📊 Found $DIAGRAM_COUNT blog diagrams"
++
++          # Check if Python + Pillow available
++          if command -v python3 >/dev/null 2>&1 && python3 -c "from PIL import Image" 2>/dev/null; then
++            # Generate PDF from all diagrams
++            echo "📄 Generating PDF from $DIAGRAM_COUNT diagrams..."
++            PDF_PATH="/tmp/${SLUG}-diagrams.pdf"
++
++            python3 -c "
++from PIL import Image
++from pathlib import Path
++images = [Image.open(str(f)).convert('RGB') for f in sorted(Path('public/diagrams').glob('${SLUG}-*-${LANG}-light.png'))]
++if images:
++    images[0].save('$PDF_PATH', save_all=True, append_images=images[1:])
++    print('✅ PDF created with $DIAGRAM_COUNT pages')
++" 2>/dev/null
++
++            if [ -f "$PDF_PATH" ]; then
++              MEDIA_FILE="$PDF_PATH"
++              FILE_TYPE="pdf"
++            fi
++
++          else
++            # Pillow not available - ask user
++            echo ""
++            echo "📦 Python Pillow not installed (needed for PDF generation)"
++            echo ""
++            echo "Options:"
++            echo "  1. Install Pillow now: pip install Pillow (then rerun command)"
++            echo "  2. Skip - upload all $DIAGRAM_COUNT diagrams as separate images (works everywhere!)"
++            echo ""
++
++            # Use AskUserQuestion to get user choice
++            # For now, default to uploading all images separately (no install needed)
++            echo "⚡ Uploading all $DIAGRAM_COUNT diagrams as separate images..."
++            MEDIA_FILE="multiple"
++            FILE_TYPE="multiple-images"
++          fi
++        fi
++      fi
++
++      # Upload media (single file or multiple images)
++      if [ "$FILE_TYPE" = "multiple-images" ]; then
++        # Upload all diagrams separately (LinkedIn supports up to 9 images)
++        echo "📤 Uploading $DIAGRAM_COUNT images to LinkedIn..."
++        MEDIA_URNS=()
++        INDEX=1
++
++        IMAGES_JSON_ARRAY=""
++
++        for img in public/diagrams/${SLUG}-*-${LANG}-light.png; do
++          BASENAME=$(basename "$img" .png)
++          echo "  [$INDEX/$DIAGRAM_COUNT] Uploading $BASENAME..."
++
++          # Register upload
++          REG_RESP=$(curl -s -X POST \
++            "https://api.linkedin.com/rest/images?action=initializeUpload" \
++            -H "Authorization: Bearer $TOKEN" \
++            -H "LinkedIn-Version: 202506" \
++            -H "X-Restli-Protocol-Version: 2.0.0" \
++            -H "Content-Type: application/json" \
++            -d "{\"initializeUploadRequest\": {\"owner\": \"$MEMBER_URN\"}}")
++
++          UP_URL=$(echo "$REG_RESP" | grep -o '"uploadUrl":"[^"]*"' | cut -d'"' -f4 | sed 's/\\u0026/\&/g')
++          IMG_URN=$(echo "$REG_RESP" | grep -o '"image":"[^"]*"' | cut -d'"' -f4)
++
++          if [ -n "$UP_URL" ] && [ -n "$IMG_URN" ]; then
++            curl -s -X PUT "$UP_URL" -H "Authorization: Bearer $TOKEN" --upload-file "$img" >/dev/null 2>&1
++
++            # Add to images array with id AND altText (required!)
++            if [ -n "$IMAGES_JSON_ARRAY" ]; then
++              IMAGES_JSON_ARRAY="${IMAGES_JSON_ARRAY},"
++            fi
++            IMAGES_JSON_ARRAY="${IMAGES_JSON_ARRAY}{\"id\":\"$IMG_URN\",\"altText\":\"Diagram $INDEX\"}"
++            echo "    ✅ Uploaded"
++          fi
++
++          INDEX=$((INDEX + 1))
++        done
++
++        # Complete images array
++        MEDIA_URN="[${IMAGES_JSON_ARRAY}]"
++        echo "✅ All $DIAGRAM_COUNT images uploaded with altText!"
++
++      elif [ -n "$MEDIA_FILE" ]; then
++        # Single file upload
++        case "$MEDIA_FILE" in
++          *.pdf) API_ENDPOINT="documents"; URN_KEY="document" ;;
++          *.png|*.jpg|*.jpeg) API_ENDPOINT="images"; URN_KEY="image" ;;
++        esac
++
++        echo "📤 Uploading $(basename $MEDIA_FILE)..."
++        REG_RESP=$(curl -s -X POST \
++          "https://api.linkedin.com/rest/${API_ENDPOINT}?action=initializeUpload" \
++          -H "Authorization: Bearer $TOKEN" \
++          -H "LinkedIn-Version: 202506" \
++          -H "X-Restli-Protocol-Version: 2.0.0" \
++          -H "Content-Type: application/json" \
++          -d "{\"initializeUploadRequest\": {\"owner\": \"$MEMBER_URN\"}}")
++
++        UP_URL=$(echo "$REG_RESP" | grep -o '"uploadUrl":"[^"]*"' | cut -d'"' -f4 | sed 's/\\u0026/\&/g')
++        MEDIA_URN=$(echo "$REG_RESP" | grep -o "\"${URN_KEY}\":\"[^\"]*\"" | cut -d'"' -f4)
++
++        if [ -n "$UP_URL" ] && [ -n "$MEDIA_URN" ]; then
++          curl -s -X PUT "$UP_URL" -H "Authorization: Bearer $TOKEN" --upload-file "$MEDIA_FILE" >/dev/null
++          echo "✅ Uploaded!"
++        else
++          echo "⚠️  Upload failed"
++          MEDIA_URN=""
++        fi
++      fi
++      ```
++
++   d. Create JSON payload with optional media (pure bash):
++      ```bash
++      # Escape newlines for JSON (replace \n with \\n)
++      COMMENTARY_JSON=$(echo "$COMMENTARY_TEXT" | awk '{printf "%s\\n", $0}' | sed '$ s/\\n$//')
++
++      # Build JSON based on media type
++      if [[ "$MEDIA_URN" == "["* ]]; then
++        # Multiple images (array format)
++        cat > /tmp/linkedin-post.json << EOF
++{
++  "author": "$MEMBER_URN",
++  "commentary": "$COMMENTARY_JSON",
++  "visibility": "PUBLIC",
++  "distribution": {"feedDistribution": "MAIN_FEED"},
++  "content": {
++    "multiImage": {
++      "images": $(echo "$MEDIA_URN" | sed 's/"urn/"id":"urn/g' | sed 's/",/"},/g' | sed 's/]$/}]/')
++    }
++  },
++  "lifecycleState": "DRAFT"
++}
++EOF
++      elif [ -n "$MEDIA_URN" ]; then
++        # Single media attachment
++        cat > /tmp/linkedin-post.json << EOF
++{
++  "author": "$MEMBER_URN",
++  "commentary": "$COMMENTARY_JSON",
++  "visibility": "PUBLIC",
++  "distribution": {"feedDistribution": "MAIN_FEED"},
++  "content": {
++    "media": {
++      "id": "$MEDIA_URN"
++    }
++  },
++  "lifecycleState": "DRAFT"
++}
++EOF
++      else
++        # Text-only post
++        cat > /tmp/linkedin-post.json << EOF
++{
++  "author": "$MEMBER_URN",
++  "commentary": "$COMMENTARY_JSON",
++  "visibility": "PUBLIC",
++  "distribution": {"feedDistribution": "MAIN_FEED"},
++  "lifecycleState": "DRAFT"
++}
++EOF
++      fi
++      ```
++      **Pure bash JSON creation** - handles single/multiple media or text-only!
++
++   e. Post to LinkedIn using curl (Bash tool) **with error handling**:
++      ```bash
++      # Post to LinkedIn and capture response
++      RESPONSE=$(curl -s -X POST https://api.linkedin.com/rest/posts \
++        -H "Authorization: Bearer $TOKEN" \
++        -H "LinkedIn-Version: 202506" \
++        -H "X-Restli-Protocol-Version: 2.0.0" \
++        -H "Content-Type: application/json" \
++        -d @/tmp/linkedin-post.json)
++
++      # Check for errors in response
++      if echo "$RESPONSE" | grep -q '"status"'; then
++        STATUS=$(echo "$RESPONSE" | grep -o '"status":[0-9]*' | cut -d':' -f2)
++        if [ "$STATUS" -ge 400 ]; then
++          echo "❌ LinkedIn API Error (Status: $STATUS):"
++          echo "$RESPONSE" | grep -o '"message":"[^"]*"' | sed 's/"message":"//;s/"//'
++          echo ""
++          echo "💡 The post content was generated and saved to:"
++          echo "   /tmp/linkedin-commentary.txt"
++          echo ""
++          echo "📋 You can copy it and post manually to LinkedIn"
++          # Still open LinkedIn so user can post manually
++          open https://www.linkedin.com/feed/
++          exit 0
++        fi
++      fi
++
++      echo "✅ LinkedIn draft created successfully!"
++      ```
++
++   f. Extract post ID from response using grep/sed (no jq needed!) - if successful
++
++   g. Open LinkedIn feed using Bash tool: `open https://www.linkedin.com/feed/`
++
++   **Note**: Pure bash/curl implementation - works ANYWHERE!
++
++7. **Report results** to user with draft URL
++
++---
++
++## Professional LinkedIn Voice Guidelines
++
++**Example post styles for thought leadership content:**
++
++### Post 1 Style (No emojis originally, but use emojis now):
++```
++The Four Ways to Build Software in 2025 (And Why Most Are Getting It Wrong)
++
++AI agents are revolutionizing software development, creating a multi-trillion-dollar market. Notably, 88% of senior executives plan to increase their AI budgets in 2025. However, a concerning reality persists: fewer than 45% are fundamentally rethinking their operating models.
++
++This oversight leads to 41% of workers facing AI-generated "workslop"—content that seems polished but lacks depth—resulting in nearly two hours of rework for each instance.
++
++In our latest deep-dive, we explore:
++
++- The four dominant build models in the AI agent era
++- Why Review-Driven Design (RDD) is a game-changer
++- How Spec-Driven Development (SDD) removes ambiguity
++- The hidden economics of AI development that many teams overlook
++- Why review speed—not coding speed—is the new bottleneck
++
++Key insight: AI agents can generate 1,000 lines of code in 60 seconds, but humans require 60 minutes to review it. RDD optimizes code for 10x faster human review, cutting that time down to just 6 minutes.
++
++The disparity between AI adopters and AI adapters is significant. Adopters utilize AI tools, while adapters transform their entire delivery model.
++
++Which one are you?
++
++Read the full article here: [URL]
++
++hashtag#AI hashtag#SoftwareDevelopment hashtag#AIAgents...
++```
++
++### Post 2 Style (With emojis):
++```
++Your users don't follow specifications. They enter emoji in name fields, submit forms 17 times in 3 seconds, and paste entire novels into comment boxes.
++
++The question isn't "if" something will go wrong-it's "what" will go wrong, "when", and whether your tests caught it first.
++
++Here's the uncomfortable truth: You can have 100% code coverage and still miss critical edge cases.
++
++Code coverage measures which lines execute during tests-not which behaviors are validated or which edge cases are explored.
++
++We've developed an edge case taxonomy after researching several production incidents that "shouldn't have happened":
++
++1️⃣ Boundary Cases - MIN/MAX values, string lengths, date ranges
++2️⃣ Null/Empty Cases - null, undefined, empty collections
++3️⃣ Format Cases - SQL injection, XSS, Unicode/emoji, malformed data
++4️⃣ State Cases - Race conditions, invalid transitions, timeouts
++5️⃣ Implicit Requirements - The unstated assumptions stakeholders never document
++
++Real war stories from production:
++• Leap year bug: Payment system added 365 days. Worked perfectly until Feb 29, 2020
++• Unicode email incident: Regex rejected müller@example.com
++• Null pointer in prod: Function assumed cart always had items. Empty cart = crash
++
++The breakthrough approach? "Review-Driven Design meets TDD":
++✅ Write edge case tests BEFORE implementing (not after)
++✅ Use constructor injection to make hidden dependencies testable
++✅ Organize tests by edge case category (boundary, security, performance)
++✅ Track edge case coverage, not just code coverage
++
++Instead of:
++❌ "Build us a user dashboard"
++
++Think:
++✅ "What happens if username is null?"
++✅ "What if email contains SQL injection attempt?"
++✅ "What if two users click submit simultaneously?"
++✅ "What if the API times out mid-operation?"
++
++This is the detective's mindset: asking "what could possibly go wrong?" before writing any production code.
++
++Our comprehensive guide covers:
++• The Red-Green-Refactor cycle optimized for edge case hunting
++• Constructor injection patterns that make testing 10x easier
++• Property-based testing techniques
++• Real-world case studies with lessons learned
++• Complete edge case checklist for production readiness
++
++Because edge case testing isn't about paranoia-it's about "craftsmanship".
++
++Read the full practitioner's guide: [URL]
++
++hashtag#TDD hashtag#SoftwareTesting...
++```
++
++---
++
++## Commentary Generation Checklist
++
++Generate LinkedIn commentary that:
++- ✅ Starts with the blog post title
++- ✅ Opens with a hook that grabs attention (stats, contrarian statement, or problem)
++- ✅ Includes "Here's the uncomfortable truth:" or similar contrarian angle
++- ✅ Lists 3-5 key points from the ACTUAL blog content with emojis (🎯, 💡, ⚡, ✅)
++- ✅ Adds a "Key insight:" with a specific quantitative or qualitative takeaway
++- ✅ Includes a rhetorical question for engagement ("Which one are you?")
++- ✅ Links to the full article: [BLOG_BASE_URL]/blog/[SLUG]
++- ✅ Ends with engagement CTA ("Drop your thoughts below! 👇" or similar)
++- ✅ Uses relevant hashtags (5-7 hashtags related to the content)
++- ✅ Keeps professional but conversational tone
++- ✅ Incorporates actual insights/stats from the blog post (not generic)
++
++**IMPORTANT**: Read the blog post content to extract real insights, not generic placeholders!
++
++---
++
++## Japanese LinkedIn Voice Guidelines (日本語投稿のガイド)
++
++For Japanese posts, use professional business Japanese with these characteristics:
++
++**Tone & Style:**
++- Use 敬語 (polite Japanese) but not overly formal
++- Professional yet approachable (です・ます調)
++- Technical content with clear explanations
++- Avoid overly casual expressions
++
++**Structure:**
++- Start with the article title
++- Lead with a compelling fact or insight
++- Use bullet points with numbers (①②③) or emojis
++- Include key technical points from the blog
++- End with article link: 詳細はこちら: [BLOG_BASE_URL]/blog/[SLUG]
++- Add relevant hashtags in English (LinkedIn convention)
++- Include engagement CTA: ご意見をお聞かせください 💬
++
++**Example Japanese Post Structure:**
++```
++[タイトル]
++
++[引きつける統計データや問題提起]
++
++本記事では、以下について解説します：
++
++🎯 [ポイント1]
++💡 [ポイント2]
++⚡ [ポイント3]
++✅ [ポイント4]
++
++重要な洞察：[具体的な数値やqualitative takeaway]
++
++詳細はこちら：[BLOG_BASE_URL]/blog/[SLUG]
++
++ご意見をお聞かせください 💬
++
++#LangChain #AIエージェント #ソフトウェア開発
++```
++
++---
++
++## Example Flow
++
++### English Post Example:
++User: "Create LinkedIn draft for 2025-10-06-production-ai-agents-langchain"
++
++1. Read `src/content/blog/posts/en/2025-10-06-production-ai-agents-langchain.md`
++2. Extract key insights from the actual content
++3. Generate contextual, intelligent English commentary
++4. Check for LinkedIn credentials in `.env` (guide through OAuth if needed)
++5. Use `curl` to create LinkedIn draft via REST API
++6. Open LinkedIn in browser: `open https://www.linkedin.com/feed/`
++6. Report with clear next actions:
++   ```
++   ✅ LinkedIn draft created and browser opened!
++
++   Next Steps:
++   1. LinkedIn is now open in your browser
++   2. Look for the draft post (may be at top of feed)
++   3. Review the auto-generated content
++   4. Make any final edits
++   5. Click "Post" when ready!
++
++   Note: PDF with diagrams was automatically attached
++   ```
++
++### Japanese Post Example:
++User: "Create LinkedIn draft for 2025-10-06-production-ai-agents-langchain ja"
++
++1. Detect language: Japanese (ja)
++2. Read `src/content/blog/posts/ja/2025-10-06-production-ai-agents-langchain.md`
++3. Extract key insights from the Japanese blog content
++4. Generate contextual Japanese commentary (敬語 style)
++5. Check for LinkedIn credentials in `.env` (guide through OAuth if needed)
++6. Use `curl` to create LinkedIn draft via REST API
++7. Open LinkedIn in browser: `open https://www.linkedin.com/feed/`
++7. Report with clear next actions:
++   ```
++   ✅ LinkedIn draft created! 🇯🇵 Browser opened!
++
++   次のステップ:
++   1. LinkedInがブラウザで開かれました
++   2. 下書きを確認してください（フィードの上部にあります）
++   3. 内容をレビューしてください
++   4. 必要に応じて編集してください
++   5. 準備ができたら「投稿」をクリック！
++
++   注: ダイアグラム付きPDFは自動的に添付されています
++   ```
+diff --git a/cli-tool/components/commands/marketing/medium.md b/cli-tool/components/commands/marketing/medium.md
+new file mode 100644
+index 0000000..44f47f4
+--- /dev/null
++++ b/cli-tool/components/commands/marketing/medium.md
+@@ -0,0 +1,367 @@
++---
++description: Convert any content source to Medium-ready format
++argument-hint: <input>
++---
++
++Convert any content source to Medium-ready format. This command is **adaptive** - it works with any input format and blog structure.
++
++**Usage:** `$ARGUMENTS`
++
++## Phase 1: Universal Input Detection
++
++**Parse Input:**
++- Extract content input from `$ARGUMENTS`
++- Examples:
++  - `2025-10-06-my-post` (slug)
++  - `path/to/article.md` (file path)
++  - `https://myblog.com/post` (URL)
++
++**Detect and Load Content:**
++
++**If input looks like a file path** (contains `/` or file extension):
++- Use Read tool to load the file
++- Detect format by extension:
++  - `.md` / `.mdx` → Parse markdown with frontmatter
++  - `.pdf` → Inform user PDF parsing is limited, suggest markdown
++  - `.html` → Extract main content, strip HTML tags
++  - `.txt` → Read as plain text
++  - `.json` → Parse and extract relevant fields
++
++**If input looks like a URL** (starts with `http://` or `https://`):
++- Use WebFetch tool to retrieve the page
++- Extract main article content, title, and description
++- Parse and clean the text
++
++**If input is a slug** (no `/` and no protocol):
++- Search codebase using Glob: `**/*${input}*.md`
++- Common blog locations:
++  - `src/content/blog/posts/**/*${input}*.md`
++  - `content/blog/*${input}*.md`
++  - `posts/*${input}*.md`
++  - `blog/*${input}*.md`
++- Use Read tool to parse found markdown file
++
++**Discover Blog Structure (if slug or file path):**
++Explore the codebase to understand:
++- 📁 Where are markdown files stored?
++- 📋 What frontmatter format is used?
++- 🖼️ Where are images/diagrams stored?
++- 🎨 How are images referenced? (relative paths, absolute URLs, picture elements?)
++- 🔗 What's the blog post URL structure?
++
++**For URLs:** Extract and use the content as-is, skip blog structure discovery.
++
++## Phase 2: Create Conversion Script
++
++Write a **custom TypeScript conversion script** that handles their specific structure.
++
++### Required Outputs (Universal Medium Best Practices):
++
++**1. Image Handling - Upload Markers (CRITICAL)**
++```typescript
++// Medium strips base64 and external URLs fail
++// Solution: Add clear upload marker for FIRST image only
++// IMPORTANT: Only include the FIRST image from the blog post
++return `\n\n---\n\n**📊 [UPLOAD IMAGE HERE: ${altText}]**\n\n*File: \`${relPath}\`*\n\n---\n\n`;
++```
++
++**2. References Format - Paragraphs Not Lists**
++```typescript
++// Medium adds blank numbers in lists
++// Solution: Format as individual paragraphs
++references.forEach(ref => {
++  output += `\n\n**[${ref.number}]** ${ref.content}`;
++});
++```
++
++**3. Footnotes - Inline Citations**
++```typescript
++// Convert [^1] to inline: [Author, Year, Source]
++text.replace(/\[\^(\d+)\]/g, (match, num) => {
++  return ` [${footnotes[num]}]`;
++});
++```
++
++**4. Preview HTML with One-Click Copy**
++```typescript
++// Create HTML with simple one-click copy functionality
++const previewHTML = generateOneClickCopyHTML(content);
++fs.writeFileSync(previewPath, previewHTML);
++
++// Auto-open in browser
++exec(`${openCommand} "${previewPath}"`);
++
++// Also open Medium editor
++exec(`${openCommand} "https://medium.com/new-story"`);
++```
++
++**5. Attribution Footer - Specific URL**
++```typescript
++// Link to SPECIFIC blog post, not homepage
++const blogPostURL = `${baseURL}/blog/${slug}`;
++html += `<p><em>Originally published at <a href="${blogPostURL}">${siteName}</a></em></p>`;
++```
++
++**6. Clean HTML Conversion**
++```typescript
++// Use marked.js with:
++marked.setOptions({
++  gfm: true,
++  breaks: false,
++  headerIds: false,
++  mangle: false
++});
++```
++
++### One-Click Copy HTML Template
++
++Generate an HTML with beautiful, simple one-click copy functionality:
++
++```html
++<!DOCTYPE html>
++<html>
++<head>
++  <title>Medium Article - One Click Copy</title>
++  <style>
++    /* Modern gradient background */
++    body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
++
++    /* Big prominent copy button */
++    .copy-button {
++      background: #03a87c;
++      color: white;
++      padding: 15px 40px;
++      border-radius: 30px;
++      font-size: 18px;
++      font-weight: bold;
++      cursor: pointer;
++      transition: all 0.3s;
++    }
++
++    .copy-button:hover {
++      transform: translateY(-2px);
++      box-shadow: 0 5px 15px rgba(3,168,124,0.3);
++    }
++
++    /* Content box is clickable */
++    .content-box {
++      background: white;
++      padding: 40px;
++      border-radius: 12px;
++      cursor: pointer;
++      position: relative;
++    }
++
++    .content-box::before {
++      content: "Click anywhere to copy";
++      position: absolute;
++      top: 10px;
++      right: 10px;
++      background: #f0f0f0;
++      padding: 5px 10px;
++      border-radius: 5px;
++      font-size: 12px;
++    }
++
++    /* Success notification */
++    .status-message {
++      position: fixed;
++      top: 20px;
++      left: 50%;
++      transform: translateX(-50%);
++      background: #4caf50;
++      color: white;
++      padding: 15px 30px;
++      border-radius: 30px;
++      opacity: 0;
++      transition: opacity 0.3s;
++    }
++
++    .status-message.show { opacity: 1; }
++  </style>
++</head>
++<body>
++  <div class="header">
++    <button class="copy-button" onclick="copyContent()">
++      📋 Copy Article to Clipboard
++    </button>
++    <p>Or click anywhere in the content box below</p>
++  </div>
++
++  <div class="content-box" onclick="copyContent()">
++    <!-- Article content here -->
++  </div>
++
++  <div class="status-message" id="statusMessage">
++    ✅ Content copied to clipboard!
++  </div>
++
++  <script>
++    function copyContent() {
++      const content = document.querySelector('.article-content').innerText;
++      navigator.clipboard.writeText(content).then(() => {
++        document.getElementById('statusMessage').classList.add('show');
++        setTimeout(() => {
++          document.getElementById('statusMessage').classList.remove('show');
++        }, 3000);
++      });
++    }
++  </script>
++</body>
++</html>
++```
++
++### Script Template Structure:
++
++```typescript
++import fs from 'fs';
++import path from 'path';
++import { marked } from 'marked';
++
++const BLOG_BASE_URL = 'USER_PROVIDED_URL';
++
++interface BlogMetadata {
++  title: string;
++  description: string;
++  // ... detected fields
++}
++
++function parseBlogPost(filePath: string) {
++  // Parse their specific frontmatter format
++}
++
++function convertImages(markdown: string, imagePath: string) {
++  // Handle THEIR image format
++  // Always output: upload markers
++}
++
++function formatReferences(markdown: string) {
++  // Extract references section
++  // Always output: paragraphs with [N] prefix
++}
++
++function convertToMedium(markdown: string, slug: string) {
++  // Apply all universal fixes
++  // Return clean HTML
++}
++
++function generatePreviewHTML(content: string, metadata: BlogMetadata) {
++  return `<!DOCTYPE html>
++<html>
++<head>
++  <title>Medium Preview: ${metadata.title}</title>
++  <style>/* Clean, readable styling */</style>
++</head>
++<body>
++  <div class="instructions">
++    <h2>📋 How to Copy to Medium</h2>
++    <ol>
++      <li>Select all (Cmd/Ctrl+A)</li>
++      <li>Copy (Cmd/Ctrl+C)</li>
++      <li>Paste into Medium editor (Cmd/Ctrl+V)</li>
++      <li>Upload images at markers</li>
++      <li>Delete marker text after uploading</li>
++      <li>Publish!</li>
++    </ol>
++  </div>
++  <div id="content">${content}</div>
++</body>
++</html>`;
++}
++
++async function main() {
++  // Parse blog post with their structure
++  // Convert with universal Medium fixes
++  // Generate preview and auto-open
++}
++```
++
++## Phase 3: Execute & Guide
++
++1. **Run the generated script** OR **Create HTML directly with Write tool**
++   - If using Write tool directly for preview HTML:
++     - **IMPORTANT**: Check if `medium-article-[LANG].html` exists first: `ls -la medium-article-[LANG].html 2>&1`
++     - If exists, use Read tool first (even just 1 line): `Read('medium-article-[LANG].html', limit=1)`
++     - Then use Write tool to create/update the file
++2. **Verify preview opens** in browser
++3. **Provide instructions:**
++   - How many images to upload
++   - Where each diagram file is located
++   - Copy-paste workflow
++
++## Critical Success Factors
++
++✅ **Image markers must be clear** - User needs exact file paths
++✅ **References as paragraphs** - Avoid Medium's numbered list bugs
++✅ **Preview auto-opens** - Streamlined workflow
++✅ **Specific blog URL** - Not just homepage
++✅ **Clean formatting** - No extra blank lines or artifacts
++
++## Testing Checklist
++
++After conversion, verify:
++- [ ] Preview HTML opens automatically
++- [ ] All images have upload markers with file paths
++- [ ] References section has no blank numbers
++- [ ] Footer links to specific blog post URL
++- [ ] Footnotes converted to inline citations
++- [ ] Code blocks preserved
++- [ ] No HTML artifacts (picture tags removed, etc.)
++
++## Example Interaction
++
++```
++User: /convert-to-medium
++You: Which blog post would you like to convert? (provide path or slug)
++User: src/posts/2024-01-15-my-post.md
++You: What's your blog's base URL? (e.g., https://myblog.com)
++User: https://myblog.com
++
++[You explore their codebase]
++
++You: I found:
++- Markdown files in: src/posts/
++- Images in: public/images/
++- Frontmatter format: YAML with title, date, tags
++- URL structure: /posts/{slug}
++
++Creating conversion script...
++
++[Generate and run custom script]
++
++✅ Preview & Medium editor opened!
++- Title: My Post
++- 3 images to upload (markers added)
++- References formatted as paragraphs
++- Footer links to: https://myblog.com/posts/2024-01-15-my-post
++
++SUPER SIMPLE Next Steps:
++1. Click the BIG GREEN BUTTON (or click anywhere in content box) to copy
++2. Switch to Medium tab and paste (Cmd/Ctrl+V)
++3. Upload 3 images at the clearly marked spots
++4. Publish!
++```
++
++## Key Differences from Hardcoded Script
++
++❌ **Old way**: Hardcoded paths, specific to Kanaeru
++✅ **New way**: Discovers structure, adapts to any blog
++
++❌ **Old way**: One script for one blog
++✅ **New way**: Generate custom script per blog
++
++❌ **Old way**: User needs to modify code
++✅ **New way**: User just provides blog post + URL
++
++## Universal Best Practices (Always Apply)
++
++These work for ANY blog, ANY structure:
++
++1. **Images** → Upload markers (Medium limitation)
++2. **References** → Paragraphs (Medium bug workaround)
++3. **Footnotes** → Inline citations (Medium doesn't support footnotes)
++4. **Preview** → Auto-open (UX improvement)
++5. **Footer** → Specific URL (proper attribution)
++6. **HTML** → Clean, minimal (Medium compatibility)
++
++Be thorough in exploring their blog structure. Generate clean, working code. Test the output before declaring success.
+diff --git a/cli-tool/components/commands/marketing/x.md b/cli-tool/components/commands/marketing/x.md
+new file mode 100644
+index 0000000..a11e16e
+--- /dev/null
++++ b/cli-tool/components/commands/marketing/x.md
+@@ -0,0 +1,348 @@
++---
++description: Generate a copy-pastable X thread from any content source
++argument-hint: <input> [lang]
++tags: [x, social, blog, thread, i18n]
++---
++
++Generate a copy-pastable X thread from any content source - blog posts, articles, PDFs, URLs, or plain text.
++
++**Usage:** `$ARGUMENTS`
++
++**Process:**
++
++1. **Parse Input Arguments**
++   - Extract content input and optional language parameter
++   - Examples:
++     - `2025-10-06-my-post` (slug only, default English)
++     - `2025-10-06-my-post ja` (slug with Japanese)
++     - `path/to/article.md` (file path)
++     - `https://myblog.com/post` (URL)
++     - `docs/whitepaper.pdf en` (PDF with language)
++
++2. **Universal Input Detection**
++
++   **If input looks like a file path** (contains `/` or file extension):
++   - Use Read tool to check if file exists
++   - Detect format by extension:
++     - `.md` / `.mdx` → Parse markdown with frontmatter (extract title, description, body, metadata)
++     - `.pdf` → Inform user PDF parsing is limited, suggest converting to markdown first
++     - `.docx` → Inform user DOCX parsing is limited, suggest converting to markdown first
++     - `.html` → Read and extract main content, strip HTML tags
++     - `.txt` → Read as plain text
++     - `.json` → Parse JSON and extract relevant fields
++   - Extract: title, description, body content, metadata
++
++   **If input looks like a URL** (starts with `http://` or `https://`):
++   - Use WebFetch tool to retrieve the page
++   - Prompt: "Extract the main article content, title, and description from this page"
++   - Parse and clean the text
++
++   **If input is a slug** (no `/` and no protocol):
++   - Search codebase using Glob: `**/*${input}*.md`
++   - Common patterns to check:
++     - `src/content/blog/posts/{en,ja}/*${input}*.md`
++     - `content/blog/*${input}*.md`
++     - `posts/*${input}*.md`
++     - `blog/*${input}*.md`
++   - If language specified, prioritize matching language folder
++   - Use Read tool to parse markdown file with frontmatter
++
++3. **Determine Language** (default: English):
++   - If user explicitly specifies "ja" → Japanese
++   - If user explicitly specifies "en" → English
++   - If file path contains `/ja/` → Japanese
++   - If content appears to be in Japanese → Japanese
++   - Otherwise → English
++
++4. **Generate engaging X thread** in the target language:
++   - **For English**: Follow Kanaeru Labs' X voice (see guidelines below)
++   - **For Japanese**: Use professional yet accessible Japanese tone
++   - Use actual blog content and key points
++   - Make it contextual and intelligent, not template-based
++
++5. **Generate the thread directly** using Claude's built-in capabilities:
++   - Read the blog content using Read tool
++   - Extract key insights and stats from the content
++   - Create engaging thread following the guidelines below
++   - Validate character counts (max 280 per post)
++   - **PURE CLAUDE - NO external scripts, NO npm, NO dependencies**
++
++6. **Display the generated thread** to the user in terminal:
++   - Show all posts with character counts
++   - Show total thread length (e.g., "6 posts")
++   - Format for easy copy-pasting
++
++7. **Create HTML preview file** using Write tool:
++   - **IMPORTANT**: Check if file exists first: `ls -la x-thread-[LANG].html 2>&1`
++   - If file exists, use Read tool first (even just 1 line): `Read('x-thread-[LANG].html', limit=1)`
++   - Then use Write tool to create/update: `x-thread-[LANG].html` in user's current directory
++   - Include all thread posts with "Copy Post" buttons
++   - Use X branding (black theme)
++   - Use Bash tool to open: `open x-thread-[LANG].html && open https://x.com/compose/post`
++   - Works in ANY repo type (Python, Rust, Go, etc.)
++
++---
++
++## X Thread Guidelines
++
++### Thread Structure (5-8 tweets):
++
++1. **Hook Tweet** (Tweet 1/X)
++   - Grab attention with a contrarian statement, stat, or bold claim
++   - Don't give away everything - create curiosity
++   - NO hashtags or links in first tweet (better algorithm reach)
++   - Max 280 chars including thread indicator
++
++2. **Problem/Context Tweets** (Tweets 2-3/X)
++   - Set up the problem or context
++   - Use specific data points from the blog
++   - Keep each tweet to ONE idea
++   - Max 280 chars each
++
++3. **Insight Tweets** (Tweets 4-6/X)
++   - Share 3-5 key insights from the blog
++   - Use bullet points (•) or numbered lists
++   - Include specific examples or stats
++   - Make each tweet self-contained
++   - Max 280 chars each
++
++4. **CTA Tweet** (Final tweet)
++   - Link to the full article (auto-detect from blog structure or use: https://www.kanaeru.ai/blog/[SLUG])
++   - Simple CTA: "Read the full guide:" or "Full breakdown:"
++   - Can include 2-3 relevant hashtags here
++   - Encourage engagement: "What's your take?"
++   - **Note**: For non-kanaeru blogs, omit URL or use placeholder "[BLOG URL]"
++
++---
++
++## Writing Style Guidelines
++
++**Tone:**
++- Conversational but authoritative
++- Use "you" to make it personal
++- Short sentences for readability
++- Active voice preferred
++
++**Formatting:**
++- Use line breaks for readability
++- Emojis sparingly (max 1-2 per tweet)
++- Numbers/stats for credibility
++- Avoid jargon unless necessary
++
++**Thread Numbering:**
++- Include "(1/6)" style numbering in EVERY tweet
++- Count MUST be accurate
++- Place at the end of each tweet
++
++**Character Limits:**
++- Each post: MAX 280 characters (including thread number)
++- Account for URL shortening: URLs = 23 chars on X
++- Leave buffer of 10-15 chars for safety
++
++---
++
++## Example English Thread Structure
++
++```
++Tweet 1/6:
++AI agents can generate 1,000 lines of code in 60 seconds.
++
++But humans need 60 minutes to review it.
++
++This is the new bottleneck in software development that nobody's talking about. (1/6)
++
++Tweet 2/6:
++88% of senior executives plan to increase AI budgets in 2025.
++
++Yet fewer than 45% are rethinking their operating models.
++
++The result? AI-generated "workslop" that creates 2 hours of rework per instance. (2/6)
++
++Tweet 3/6:
++We've identified four dominant build models in the AI era:
++
++• Traditional development (slow)
++• AI-assisted coding (faster)
++• Spec-Driven Development (clear)
++• Review-Driven Design (optimal)
++
++Most teams are stuck between 1 and 2. (3/6)
++
++Tweet 4/6:
++Review-Driven Design (RDD) flips the script:
++
++Instead of optimizing for coding speed, optimize for REVIEW speed.
++
++RDD code can be reviewed 10x faster: 60 mins → 6 mins.
++
++That's where the real productivity gains hide. (4/6)
++
++Tweet 5/6:
++The gap between AI adopters and AI adapters is widening:
++
++Adopters: Use AI tools
++Adapters: Transform their entire delivery model
++
++One is incrementally faster.
++The other is fundamentally different. (5/6)
++
++Tweet 6/6:
++Full breakdown of all four build models, the hidden economics, and why review speed is the new bottleneck:
++
++https://www.kanaeru.ai/blog/2025-10-06-choosing-your-build-model-agent-era-rdd-wins
++
++Which approach is your team using? (6/6)
++
++#AI #SoftwareDevelopment #DevOps
++```
++
++---
++
++## Japanese Thread Guidelines (日本語スレッドのガイド)
++
++**Tone & Style:**
++- Professional yet accessible (です・ます調 or だ・である調)
++- Technical content with clear explanations
++- Less formal than LinkedIn, more conversational
++- Use technical terms in English where appropriate
++
++**Thread Structure:**
++- Same 5-8 post structure as English
++- Use emojis more liberally (Japanese X culture)
++- Include article link in final post
++- Hashtags in English (better reach)
++
++**Example Japanese Hook:**
++```
++AIエージェントは60秒で1,000行のコードを生成できます。
++
++でも人間がそれをレビューするには60分かかります。
++
++これが2025年のソフトウェア開発における新しいボトルネックです。 (1/6)
++```
++
++---
++
++## Thread Generation Checklist
++
++Generate X thread that:
++- ✅ Starts with an attention-grabbing hook (no links/hashtags)
++- ✅ Maintains one clear idea per tweet
++- ✅ Stays under 280 chars per tweet (including thread number)
++- ✅ Uses actual insights/stats from the blog post
++- ✅ Numbers tweets correctly (1/6, 2/6, etc.)
++- ✅ Includes blog URL only in final tweet
++- ✅ Ends with engagement question
++- ✅ Uses line breaks for readability
++- ✅ Adds relevant hashtags (2-4) only in final tweet
++- ✅ Is immediately copy-pastable
++
++**IMPORTANT**: Read the blog post content to extract real insights, not generic placeholders!
++
++---
++
++## Example Flow
++
++### English Thread Example:
++User: "Create X thread for 2025-10-06-production-ai-agents-langchain"
++
++1. Read `src/content/blog/posts/en/2025-10-06-production-ai-agents-langchain.md`
++2. Extract key insights from the actual content
++3. Generate engaging 6-7 post thread directly (using Claude's LLM)
++4. Create HTML preview file: `x-thread-en.html` (using Write tool)
++5. Open preview and X.com (using Bash: `open x-thread-en.html && open https://x.com/compose/post`)
++6. Display formatted thread with character counts
++7. Provide copy-paste instructions
++
++### Japanese Thread Example:
++User: "Create X thread for 2025-10-06-production-ai-agents-langchain ja"
++
++1. Detect language: Japanese (ja)
++2. Read `src/content/blog/posts/ja/2025-10-06-production-ai-agents-langchain.md`
++3. Extract key insights from the Japanese blog content
++4. Generate Japanese thread directly (using Claude's LLM)
++5. Create HTML preview file: `x-thread-ja.html` (using Write tool)
++6. Open preview and X.com (using Bash)
++7. Display formatted thread in Japanese with character counts
++8. Provide copy-paste instructions
++
++---
++
++## Output Format
++
++The script should output in this format:
++
++```
++═══════════════════════════════════════════════════════════════
++✅ X Thread Generated & Browser Tabs Opened!
++═══════════════════════════════════════════════════════════════
++
++📄 Blog: [Blog Title]
++🧵 Thread Length: 6 posts
++🌐 Language: English 🇺🇸
++
++📋 NEXT STEPS (Super Simple):
++  1️⃣ HTML preview opened with "Copy Post" buttons
++  2️⃣ X.com opened in new tab for posting
++  3️⃣ Click "Copy Post" for each post
++  4️⃣ Paste into X and create your thread
++
++─────────────────────────────────────────────────────────────
++
++📝 POST 1/6 (267 chars)
++─────────────────────────────────────────────────────────────
++[Post content here...]
++
++─────────────────────────────────────────────────────────────
++
++📝 POST 2/6 (245 chars)
++─────────────────────────────────────────────────────────────
++[Post content here...]
++
++[... etc for all posts ...]
++
++═══════════════════════════════════════════════════════════════
++⚡ QUICK POSTING OPTIONS:
++═══════════════════════════════════════════════════════════════
++
++Option 1: Use HTML Preview (Recommended)
++  ↳ Click "Copy Post" buttons in the HTML file
++  ↳ Paste each post on X
++
++Option 2: Manual Copy from Terminal
++  ↳ Copy each post from above
++  ↳ Post to X one by one
++
++Option 3: X Thread Composer
++  ↳ Copy entire thread at once
++  ↳ X will auto-split at line breaks!
++
++💡 PRO TIP: The HTML preview makes posting 10x faster!
++
++═══════════════════════════════════════════════════════════════
++```
++
++---
++
++## HTML Preview Template
++
++After displaying the thread in the terminal, create an HTML file for easy copying:
++
++**File Location:** `x-thread-en.html` or `x-thread-ja.html` in project root
++
++**HTML Structure:**
++- Clean, modern design with X branding (black color scheme)
++- Each post in its own card with:
++  - Post number badge (1/7, 2/7, etc.)
++  - Post content (preserving line breaks)
++  - Character count
++  - "Copy Post" button that copies to clipboard
++- Instructions section at bottom
++- Responsive design for mobile/desktop
++
++**After creating the file:**
++```bash
++open x-thread-[LANG].html
++```
++
++This opens the HTML file in the user's default browser for easy copying.
+-- 
+2.43.0
+

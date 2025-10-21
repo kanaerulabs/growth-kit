@@ -6,3 +6,5 @@ dist/
 *.pdf
 *.html
 public/
+.claude/
+.vercel/

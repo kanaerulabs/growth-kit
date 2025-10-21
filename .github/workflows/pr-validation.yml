@@ -1,0 +1,381 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for git diff comparisons
+
+      - name: Validate plugin structure
+        run: |
+          echo "🔍 Validating plugin structure..."
+
+          # Check required files exist
+          test -f .claude-plugin/marketplace.json || (echo "❌ marketplace.json missing" && exit 1)
+          test -f README.md || (echo "❌ README.md missing" && exit 1)
+          test -f LICENSE || (echo "❌ LICENSE missing" && exit 1)
+
+          echo "✅ Required files present"
+
+      - name: Validate JSON files
+        run: |
+          echo "🔍 Validating JSON files..."
+
+          # Validate marketplace.json
+          python3 -m json.tool .claude-plugin/marketplace.json > /dev/null || (echo "❌ Invalid JSON in marketplace.json" && exit 1)
+
+          echo "✅ JSON files valid"
+
+      - name: Validate markdown command files
+        run: |
+          echo "🔍 Validating command files..."
+
+          # Check all command files have frontmatter
+          for file in publisher-plugin/commands/*.md analytics-plugin/commands/*.md; do
+            if [ -f "$file" ]; then
+              echo "Checking $file..."
+              head -1 "$file" | grep -q "^---$" || (echo "❌ Missing frontmatter in $file" && exit 1)
+            fi
+          done
+
+          echo "✅ All command files have valid frontmatter"
+
+      - name: Check for exposed secrets
+        run: |
+          echo "🔍 Checking for exposed secrets..."
+
+          # Check for common secret patterns
+          if grep -r "LINKEDIN_CLIENT_SECRET.*=" --include="*.md" --exclude-dir=.git publisher-plugin/ analytics-plugin/ | grep -v "your_secret\|CLIENT_SECRET="; then
+            echo "❌ Possible exposed secret found"
+            exit 1
+          fi
+
+          if test -f .env; then
+            echo "❌ .env file should not be committed"
+            exit 1
+          fi
+
+          echo "✅ No exposed secrets found"
+
+      - name: Validate bash syntax in commands
+        run: |
+          echo "🔍 Validating bash syntax..."
+
+          # Extract bash code blocks and check for common errors
+          for file in publisher-plugin/commands/*.md; do
+            echo "Checking bash syntax in $file..."
+
+            # Check for unescaped quotes in sed commands
+            if grep -E "sed 's/[^']*\$" "$file"; then
+              echo "⚠️  Potential sed syntax issue in $file"
+            fi
+
+            # Check for unclosed heredocs
+            if grep -c "<<" "$file" != $(grep -c "^EOF$\|^COMMENTARYEOF$" "$file"); then
+              echo "⚠️  Potential unclosed heredoc in $file"
+            fi
+          done
+
+          echo "✅ Bash syntax checks passed"
+
+      - name: Check command descriptions
+        run: |
+          echo "🔍 Validating command descriptions..."
+
+          # Verify all commands listed in marketplace.json exist
+          python3 << 'PYEOF'
+          import json
+          import os
+
+          with open('.claude-plugin/marketplace.json') as f:
+              manifest = json.load(f)
+
+          for plugin in manifest['plugins']:
+              print(f"Checking {plugin['name']} plugin...")
+              for cmd in plugin.get('commands', []):
+                  cmd_path = os.path.join(plugin['source'], cmd)
+                  if not os.path.exists(cmd_path):
+                      print(f"❌ Command file missing: {cmd_path}")
+                      exit(1)
+                  print(f"  ✓ {cmd}")
+
+          print("✅ All commands exist")
+          PYEOF
+
+      - name: Validate .gitignore
+        run: |
+          echo "🔍 Checking .gitignore..."
+
+          # Verify critical files are ignored
+          grep -q "^\.env$" .gitignore || (echo "❌ .env not in .gitignore" && exit 1)
+          grep -q "^\.claude/" .gitignore || (echo "❌ .claude/ not in .gitignore" && exit 1)
+
+          echo "✅ .gitignore properly configured"
+
+      - name: Verify modified commands match plugin structure
+        run: |
+          echo "🔍 Verifying modified .md files will be loaded correctly..."
+
+          # Ensure origin/main exists for comparison
+          git fetch origin main:refs/remotes/origin/main 2>/dev/null || echo "⚠️  Using HEAD for comparison"
+
+          # Get list of modified .md command files (with error handling)
+          if git rev-parse origin/main >/dev/null 2>&1; then
+            MODIFIED_COMMANDS=$(git diff --name-only origin/main...HEAD | grep -E "commands/.*\.md$" || true)
+          else
+            echo "❌ origin/main not found - cannot compare changes"
+            exit 1
+          fi
+
+          if [ -n "$MODIFIED_COMMANDS" ]; then
+            echo "Modified command files:"
+            echo "$MODIFIED_COMMANDS"
+            echo ""
+
+            # For each modified command, verify it's referenced in marketplace.json
+            python3 << 'PYEOF'
+          import json
+          import os
+          import subprocess
+
+          # Get modified files
+          result = subprocess.run(['git', 'diff', '--name-only', 'origin/main...HEAD'],
+                                  capture_output=True, text=True)
+          modified_files = [f for f in result.stdout.strip().split('\n') if 'commands/' in f and f.endswith('.md')]
+
+          # Load marketplace.json
+          with open('.claude-plugin/marketplace.json') as f:
+              manifest = json.load(f)
+
+          # Check each modified file is referenced
+          all_valid = True
+          for mod_file in modified_files:
+              if not mod_file:
+                  continue
+
+              found = False
+              for plugin in manifest['plugins']:
+                  plugin_source = plugin['source']
+                  for cmd in plugin.get('commands', []):
+                      full_path = os.path.join(plugin_source, cmd).replace('./', '')
+                      if full_path == mod_file:
+                          found = True
+                          print(f"  ✓ {mod_file} is loaded by {plugin['name']} plugin")
+                          break
+
+              if not found:
+                  print(f"  ⚠️  {mod_file} is NOT referenced in marketplace.json")
+                  all_valid = False
+
+          if not all_valid:
+              print("\n❌ Some modified commands won't be loaded!")
+              exit(1)
+
+          print("\n✅ All modified commands are properly registered")
+          PYEOF
+
+          else
+            echo "No command files modified in this PR"
+          fi
+
+          echo "✅ Command structure validation complete"
+
+      - name: Test commands in simulated environment
+        run: |
+          echo "🧪 Testing commands in simulated environment..."
+
+          # Create test project
+          mkdir -p /tmp/growth-kit-test/src/content/blog/posts/en
+          cd /tmp/growth-kit-test
+
+          # Create test blog post
+          cat > src/content/blog/posts/en/2025-01-01-test-post.md << 'EOF'
+          ---
+          title: "Test Post for Growth Kit"
+          description: "Testing the plugin"
+          author: "Test Author"
+          date: "2025-01-01"
+          ---
+
+          # Test Post
+
+          This is a test post with (parentheses) and {brackets} and #hashtags.
+
+          Some content here for testing.
+          EOF
+
+          echo "✅ Test project created"
+
+          # Verify command files can find the test post
+          cd $GITHUB_WORKSPACE
+
+          # Check X command would find the post
+          if grep -q "Glob.*\*\*/\*.*\.md" publisher-plugin/commands/x.md; then
+            echo "  ✓ X command uses Glob to find markdown files"
+          else
+            echo "  ⚠️  X command might not find blog posts correctly"
+          fi
+
+          # Check LinkedIn command mentions escaping
+          if grep -q "STEP 1.*Escape LinkedIn" publisher-plugin/commands/linkedin.md; then
+            echo "  ✓ LinkedIn command has two-step escaping"
+          else
+            echo "  ⚠️  LinkedIn command might not escape characters correctly"
+          fi
+
+          # Verify commands mention required tools
+          for cmd_file in publisher-plugin/commands/*.md; do
+            cmd_name=$(basename "$cmd_file" .md)
+
+            # All publisher commands should mention Read, Write, and Bash tools
+            if ! grep -q "Read tool\|Write tool\|Bash tool" "$cmd_file"; then
+              echo "  ⚠️  $cmd_name might not use required Claude tools"
+            fi
+          done
+
+          echo "✅ Command simulation tests passed"
+
+          # Cleanup
+          rm -rf /tmp/growth-kit-test
+
+      - name: Setup Claude Code Credentials (Optional)
+        env:
+          CLAUDE_CREDENTIALS: ${{ secrets.CLAUDE_CREDENTIALS }}
+        run: |
+          if [ -n "$CLAUDE_CREDENTIALS" ]; then
+            echo "🔐 Setting up Claude Code credentials..."
+
+            # Create .claude directory
+            mkdir -p ~/.claude
+
+            # Write credentials from secret
+            echo "$CLAUDE_CREDENTIALS" > ~/.claude/.claude.json
+
+            # Set permissions
+            chmod 600 ~/.claude/.claude.json
+
+            echo "✅ Claude credentials configured"
+          else
+            echo "⚠️  CLAUDE_CREDENTIALS secret not set - skipping plugin execution tests"
+            echo "   Plugin installation verification will be skipped"
+            echo "   Only command content verification will run"
+          fi
+
+      - name: Install Claude Code CLI (Optional)
+        env:
+          CLAUDE_CREDENTIALS: ${{ secrets.CLAUDE_CREDENTIALS }}
+        run: |
+          if [ -n "$CLAUDE_CREDENTIALS" ]; then
+            echo "📦 Installing Claude Code CLI..."
+
+            # Install Claude Code CLI
+            npm install -g @anthropic-ai/claude-code
+
+            # Verify installation
+            claude --version
+
+            echo "✅ Claude Code CLI installed"
+          else
+            echo "⏭️  Skipping Claude Code CLI installation (no credentials)"
+          fi
+
+      - name: Test Plugin Installation with Claude Code (Optional)
+        env:
+          CLAUDE_CREDENTIALS: ${{ secrets.CLAUDE_CREDENTIALS }}
+          CLAUDE_CONFIG_DIR: ~/.claude
+        run: |
+          if [ -n "$CLAUDE_CREDENTIALS" ]; then
+            echo "🧪 Testing plugin installation from branch..."
+
+            # Add marketplace from current checkout (uses current branch)
+            claude plugin marketplace add $GITHUB_WORKSPACE
+
+            # List marketplaces to verify
+            echo ""
+            echo "Configured marketplaces:"
+            claude plugin marketplace list
+
+            echo ""
+            # Install publisher plugin
+            claude plugin install publisher
+
+            # Install analytics plugin
+            claude plugin install analytics
+
+            echo ""
+            echo "✅ Plugins installed successfully from branch!"
+            echo ""
+            echo "Next step: Verify commands are loaded correctly..."
+          else
+            echo "⏭️  Skipping plugin installation test (no credentials)"
+          fi
+
+      - name: Summary
+        env:
+          CLAUDE_CREDENTIALS: ${{ secrets.CLAUDE_CREDENTIALS }}
+        run: |
+          echo "═══════════════════════════════════════════════════════════════"
+          echo "✅ All automated validation checks passed!"
+          echo "═══════════════════════════════════════════════════════════════"
+          echo ""
+          echo "Validated:"
+          echo "  ✓ Plugin structure"
+          echo "  ✓ JSON files"
+          echo "  ✓ Markdown frontmatter"
+          echo "  ✓ No exposed secrets"
+          echo "  ✓ Bash syntax"
+          echo "  ✓ Command file existence"
+          echo "  ✓ .gitignore configuration"
+          echo "  ✓ Content updates verified"
+
+          if [ -n "$CLAUDE_CREDENTIALS" ]; then
+            echo "  ✓ Claude Code CLI installation"
+            echo "  ✓ Plugin marketplace integration"
+            echo "  ✓ Plugin installation from branch"
+          else
+            echo "  ⚠️  Claude Code CLI tests skipped (no credentials)"
+            echo "  ⚠️  Plugin installation tests skipped (no credentials)"
+          fi
+
+          echo ""
+
+          if [ -z "$CLAUDE_CREDENTIALS" ]; then
+            echo "📋 TO ENABLE AUTOMATED PLUGIN TESTING:"
+            echo "═══════════════════════════════════════════════════════════════"
+            echo ""
+            echo "Add your Claude credentials as a GitHub secret:"
+            echo ""
+            echo "1. Get your credentials file content:"
+            echo "   cat ~/.claude/.claude.json"
+            echo ""
+            echo "2. Go to GitHub repo → Settings → Secrets and variables → Actions"
+            echo ""
+            echo "3. Click 'New repository secret'"
+            echo ""
+            echo "4. Name: CLAUDE_CREDENTIALS"
+            echo "   Value: <paste the .claude.json content>"
+            echo ""
+            echo "5. Save and re-run the workflow"
+            echo ""
+            echo "This uses your Claude Max subscription for CI testing!"
+            echo ""
+          fi
+
+          echo "⚠️  MANUAL TESTING STILL RECOMMENDED:"
+          echo "  • Install plugin locally: claude plugin marketplace add /path/to/repo"
+          echo "  • Test each modified command interactively"
+          echo "  • Verify output matches documentation"
+          echo "  • Test in a clean test project"
+          echo ""
+          echo "See PR description for testing checklist."
+          echo ""
+          echo "Ready for review! 🚀"

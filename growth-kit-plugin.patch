@@ -1,0 +1,703 @@
+From b8cb07ece3c847b41dd566d9f43c294ad288dc4d Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Sun, 9 Nov 2025 16:28:17 +0000
+Subject: [PATCH] feat: Add Growth Kit - Content marketing automation plugin
+
+Add comprehensive content marketing automation commands for blog-to-social distribution.
+
+New Commands (6 total):
+- Marketing: publisher-x, publisher-linkedin, publisher-medium, publisher-devto, publisher-all
+- Setup: vercel-analytics
+
+Features: Universal input, Multi-language (EN/JA), Zero dependencies, Production-tested
+
+Author: Kanaeru Labs (https://www.kanaeru.ai)
+Repository: https://github.com/kanaerulabs/growth-kit
+License: MIT
+---
+ GROWTH_KIT_PR.md                              | 193 ++++++++++++++++++
+ .../commands/marketing/publisher-all.md       |  50 +++++
+ .../commands/marketing/publisher-devto.md     |  63 ++++++
+ .../commands/marketing/publisher-linkedin.md  |  64 ++++++
+ .../commands/marketing/publisher-medium.md    |  57 ++++++
+ .../commands/marketing/publisher-x.md         | 132 ++++++++++++
+ .../commands/setup/vercel-analytics.md        |  66 ++++++
+ 7 files changed, 625 insertions(+)
+ create mode 100644 GROWTH_KIT_PR.md
+ create mode 100644 cli-tool/components/commands/marketing/publisher-all.md
+ create mode 100644 cli-tool/components/commands/marketing/publisher-devto.md
+ create mode 100644 cli-tool/components/commands/marketing/publisher-linkedin.md
+ create mode 100644 cli-tool/components/commands/marketing/publisher-medium.md
+ create mode 100644 cli-tool/components/commands/marketing/publisher-x.md
+ create mode 100644 cli-tool/components/commands/setup/vercel-analytics.md
+
+diff --git a/GROWTH_KIT_PR.md b/GROWTH_KIT_PR.md
+new file mode 100644
+index 0000000..e3f7f0b
+--- /dev/null
++++ b/GROWTH_KIT_PR.md
+@@ -0,0 +1,193 @@
++# Growth Kit - Content Marketing Automation Commands
++
++## Overview
++
++This PR adds **Growth Kit** - a comprehensive content marketing automation toolkit that helps developers distribute blog content across social media platforms with a single command.
++
++Built by [Kanaeru Labs](https://www.kanaeru.ai) while building Kanaeru AI, these commands solve the time-consuming problem of manually converting blog posts into platform-specific content.
++
++## What's Included
++
++### Marketing Commands (5 new commands)
++
++**New Category:** `commands/marketing/`
++
++1. **`publisher-x.md`** - X/Twitter Thread Generator
++   - Generates copy-pastable X threads from any content source
++   - **3 format options**: Thread (5-8 posts), Single Long, Single Short
++   - Supports multi-language (EN/JA)
++   - Creates interactive HTML preview with copy buttons
++   - Auto-opens X.com for posting
++
++2. **`publisher-linkedin.md`** - LinkedIn Post Generator
++   - Creates professional LinkedIn posts via API
++   - Automatic media attachment (images/PDFs)
++   - Handles OAuth flow automatically
++   - Works with zero dependencies (bash + curl only)
++
++3. **`publisher-medium.md`** - Medium Article Converter
++   - Converts blog posts to Medium-ready HTML
++   - Image upload markers with file paths
++   - One-click copy from HTML preview
++   - Opens Medium editor automatically
++
++4. **`publisher-devto.md`** - Dev.to RSS Generator
++   - Generates complete RSS feed from all blog posts
++   - One-time setup for automatic syndication
++   - All future posts auto-import to Dev.to
++
++5. **`publisher-all.md`** - All-Platform Generator
++   - Runs all 4 publishers in one command
++   - Saves ~2 hours of manual work per post
++   - Opens all previews in browser tabs
++
++### Setup Commands (1 new command)
++
++**Existing Category:** `commands/setup/`
++
++6. **`vercel-analytics.md`** - Vercel Analytics Setup
++   - Auto-installs @vercel/analytics and @vercel/speed-insights
++   - Configures React/Vite apps
++   - Creates vercel.json for SPA routing
++   - Fixes 404 errors on Vercel deployment
++
++## Key Features
++
++✅ **Universal Input Support**
++- Blog post slugs (e.g., `2025-10-06-my-post`)
++- File paths (markdown, PDF, HTML, text)
++- URLs (fetches and converts)
++
++✅ **Zero Dependencies**
++- Works in ANY repo type (Python, Rust, Go, JavaScript, etc.)
++- Uses only Claude's built-in tools (Read, Write, Bash, Glob, WebFetch)
++- No Node.js/npm required (except for Vercel Analytics)
++
++✅ **Multi-Language Support**
++- English and Japanese (EN/JA)
++- Auto-detects language from content/path
++- Platform-specific tone and formatting
++
++✅ **Production-Ready**
++- Tested at Kanaeru Labs in production
++- Handles LinkedIn API authentication
++- Proper character counting for X/Twitter
++- HTML preview files with copy buttons
++
++## Use Cases
++
++**For Blog Authors:**
++```bash
++# Distribute a blog post across all platforms
++/publisher-all my-latest-post
++
++# Generate just an X thread
++/publisher-x my-latest-post
++
++# Create LinkedIn post with custom image
++/publisher-linkedin my-latest-post en diagram.png
++```
++
++**For Content Marketers:**
++```bash
++# Convert any URL to X thread
++/publisher-x https://competitor.com/article
++
++# Generate Medium article from PDF
++/publisher-medium whitepaper.pdf
++
++# Set up Dev.to auto-syndication
++/publisher-devto
++```
++
++**For Developers:**
++```bash
++# Add analytics to React app
++/vercel-analytics
++```
++
++## Testing
++
++All commands have been:
++- ✅ Tested in production at Kanaeru Labs
++- ✅ Validated across multiple blog structures
++- ✅ Verified to work in Python, Rust, Go, and JavaScript repos
++- ✅ Tested with both English and Japanese content
++
++## Benefits to the Community
++
++**Time Savings:**
++- X thread generation: ~30 minutes → 2 minutes
++- All platforms: ~2 hours → 5 minutes
++- One-time Dev.to setup enables automatic future syndication
++
++**Developer-Friendly:**
++- No configuration required (auto-detects blog structure)
++- Works universally (any repo type, any framework)
++- Clear error messages and helpful prompts
++
++**Production Quality:**
++- Proper API authentication handling
++- Character limit validation
++- Multi-language support
++- HTML previews for easy copying
++
++## Integration Notes
++
++**File Locations:**
++- Marketing commands: `cli-tool/components/commands/marketing/`
++- Analytics command: `cli-tool/components/commands/setup/`
++
++**Frontmatter Format:**
++All commands include proper frontmatter:
++```yaml
++---
++allowed-tools: Read, Write, Bash, Glob, WebFetch
++argument-hint: <input> [lang]
++description: [Clear description]
++---
++```
++
++**Auto-Discovery:**
++Commands will be automatically discovered by the `generate_components_json.py` script when scanning the commands directory.
++
++## Screenshots
++
++Available at: https://github.com/kanaerulabs/growth-kit
++
++See the Growth Kit README for visual examples of:
++- X thread preview with 3 format tabs
++- LinkedIn post with PDF attachment
++- Medium article preview
++- Dev.to RSS feed structure
++
++## Attribution
++
++**Author:** Kanaeru Labs (https://www.kanaeru.ai)
++**Source Repository:** https://github.com/kanaerulabs/growth-kit
++**License:** MIT
++**Contact:** support@kanaeru.ai
++
++## Related Resources
++
++- Growth Kit Documentation: https://github.com/kanaerulabs/growth-kit
++- Example Blog Posts: See Growth Kit repo for real examples
++- LinkedIn API Setup: https://www.linkedin.com/developers/apps
++
++---
++
++## Why This Matters
++
++Content distribution is a major bottleneck for developer bloggers and technical content creators. These commands solve real pain points we experienced while building Kanaeru AI:
++
++- **Manual X thread creation** - repetitive and time-consuming
++- **Platform-specific formatting** - each platform has different requirements
++- **Character counting** - easy to exceed limits
++- **Media attachment** - LinkedIn API complexity
++- **Syndication setup** - Dev.to RSS configuration
++
++Growth Kit automates all of this with Claude Code's built-in capabilities.
++
++---
++
++**We believe these commands will be valuable to the Claude Code community and help developers share their technical content more effectively.**
+diff --git a/cli-tool/components/commands/marketing/publisher-all.md b/cli-tool/components/commands/marketing/publisher-all.md
+new file mode 100644
+index 0000000..ff80274
+--- /dev/null
++++ b/cli-tool/components/commands/marketing/publisher-all.md
+@@ -0,0 +1,50 @@
++---
++allowed-tools: Read, Write, Bash, Glob, WebFetch
++argument-hint: <input> [lang]
++description: Generate content for ALL platforms at once (X, LinkedIn, Medium, Dev.to)
++---
++
++# All-Platform Content Generator
++
++Generate content for X/Twitter, LinkedIn, Medium, and Dev.to in a single command.
++
++**Usage:** `$ARGUMENTS`
++
++**Examples:**
++```bash
++/publisher:all my-post              # All platforms, English
++/publisher:all my-post ja           # All platforms, Japanese
++/publisher:all article.md           # From file path
++```
++
++**What it does:**
++Runs all publisher commands sequentially:
++1. `/publisher:x` - X/Twitter thread (3 versions: thread, long, short)
++2. `/publisher:linkedin` - LinkedIn post with media attachment
++3. `/publisher:medium` - Medium-ready HTML article
++4. `/publisher:devto` - Dev.to RSS feed (if not already generated)
++
++**Process:**
++
++For each platform:
++1. Parse the same input (slug, file, or URL)
++2. Generate platform-specific content
++3. Create HTML previews
++4. Open all previews in browser tabs
++
++**Output:**
++- `x-thread-[LANG].html` - X thread with 3 format tabs
++- LinkedIn draft post (via API) or HTML preview
++- `medium-article-[LANG].html` - Medium-ready content
++- `rss-devto.xml` - Complete RSS feed
++
++**Time Savings:**
++Instead of running 4 separate commands and spending ~2 hours manually adapting content, this generates everything in one go.
++
++**Next Steps:**
++1. Browser tabs open automatically
++2. Review each platform's content
++3. Copy-paste or publish via API
++4. Adjust as needed for your audience
++
++**Note**: Each platform's content is uniquely optimized - not just copy-paste across channels.
+diff --git a/cli-tool/components/commands/marketing/publisher-devto.md b/cli-tool/components/commands/marketing/publisher-devto.md
+new file mode 100644
+index 0000000..a1b257c
+--- /dev/null
++++ b/cli-tool/components/commands/marketing/publisher-devto.md
+@@ -0,0 +1,63 @@
++---
++allowed-tools: Read, Write, Bash, Glob
++argument-hint:
++description: Generate Dev.to RSS feed from all blog posts for automatic syndication
++---
++
++# Dev.to RSS Feed Generator
++
++Generate a complete RSS feed from all your blog posts for automatic import to Dev.to.
++
++**Usage:** `/publisher:devto` (no arguments needed)
++
++**What it does:**
++- Scans all blog posts in your codebase
++- Converts markdown to HTML
++- Generates RSS 2.0 feed with proper encoding
++- Creates `public/rss-devto.xml` file
++- Provides setup instructions for Dev.to
++
++**Process:**
++
++1. **Scan for Blog Posts**
++   - Search codebase for markdown files
++   - Common patterns:
++     - `src/content/blog/**/*.md`
++     - `content/blog/**/*.md`
++     - `posts/**/*.md`
++     - `blog/**/*.md`
++
++2. **Parse Blog Posts**
++   - Extract frontmatter (title, date, description, tags)
++   - Convert markdown body to HTML
++   - Encode HTML properly for RSS (CDATA sections)
++   - Extract publication dates
++
++3. **Generate RSS Feed**
++   - Create valid RSS 2.0 XML structure
++   - Include all blog posts as items
++   - Add proper channel metadata
++   - HTML-encode content for Dev.to compatibility
++
++4. **Save Feed File**
++   - Write to `public/rss-devto.xml`
++   - Ensure proper XML formatting
++   - Validate RSS structure
++
++5. **Display Setup Instructions**
++   - Show how to add RSS to Dev.to
++   - Explain deployment requirements
++   - Guide user through configuration
++
++**One-time Setup:**
++1. Run this command to generate RSS feed
++2. Deploy your site (make RSS publicly accessible)
++3. Go to https://dev.to/settings/extensions
++4. Add your RSS URL (e.g., `https://yoursite.com/rss-devto.xml`)
++5. Dev.to will auto-import all future posts
++
++**Benefits:**
++- Automatic syndication to Dev.to
++- All future posts sync automatically
++- No manual copying required
++- Maintains original formatting
+diff --git a/cli-tool/components/commands/marketing/publisher-linkedin.md b/cli-tool/components/commands/marketing/publisher-linkedin.md
+new file mode 100644
+index 0000000..97e6845
+--- /dev/null
++++ b/cli-tool/components/commands/marketing/publisher-linkedin.md
+@@ -0,0 +1,64 @@
++---
++allowed-tools: Read, Write, Bash, Glob, WebFetch
++argument-hint: <input> [lang] [custom-file-path]
++description: Generate LinkedIn posts from blog content with automatic media attachment via LinkedIn API
++---
++
++# LinkedIn Post Generator
++
++Create professional LinkedIn posts from any content source with optional media attachment.
++
++**Usage:** `$ARGUMENTS`
++
++**Examples:**
++```bash
++/publisher:linkedin my-post                    # Auto-detect and attach blog diagrams
++/publisher:linkedin my-post en                 # English with diagrams
++/publisher:linkedin my-post en image.png       # Custom image attachment
++/publisher:linkedin my-post ja report.pdf      # Japanese with custom PDF
++```
++
++**Process:**
++
++1. **Parse Input Arguments**
++   - Content input (slug, file path, or URL)
++   - Optional language parameter (en/ja)
++   - Optional custom file path for attachment
++
++2. **Universal Input Detection**
++   - **File path**: Read and parse (markdown, PDF, HTML, text, JSON)
++   - **URL**: Use WebFetch to retrieve content
++   - **Slug**: Search codebase for matching blog post
++
++3. **Generate Professional LinkedIn Post**
++   - Use thought leadership tone for English
++   - Use professional business tone (敬語) for Japanese
++   - Extract key insights from actual content
++   - Include relevant hashtags (2-4 max)
++   - Add link to full article
++
++4. **Handle Media Attachment**
++   - **Custom file**: Use specified image/PDF if provided
++   - **Auto-detect**: Find blog diagrams if available
++   - Supported formats: PNG, JPG, JPEG, PDF
++
++5. **Post via LinkedIn API** (using Bash + curl)
++   - Check for credentials in .env file
++   - Handle OAuth flow if needed
++   - **CRITICAL**: Escape LinkedIn Little Text Format reserved characters: `| { } @ [ ] ( ) < > # * _ ~`
++   - Upload media file and get asset URN
++   - Create draft post with commentary and media
++   - Open LinkedIn in browser for review
++
++**LinkedIn API Authentication:**
++1. Create LinkedIn app at https://www.linkedin.com/developers/apps
++2. Add credentials to .env:
++   ```
++   LINKEDIN_CLIENT_ID=your_client_id
++   LINKEDIN_CLIENT_SECRET=your_secret
++   LINKEDIN_ACCESS_TOKEN=your_token (auto-generated on first use)
++   ```
++
++**Without API setup**: Command still generates the post content for manual copy-paste.
++
++**Note**: Works in ANY repo type (Python, Rust, Go, etc.) - uses only bash and curl, no Node.js required.
+diff --git a/cli-tool/components/commands/marketing/publisher-medium.md b/cli-tool/components/commands/marketing/publisher-medium.md
+new file mode 100644
+index 0000000..e24c61b
+--- /dev/null
++++ b/cli-tool/components/commands/marketing/publisher-medium.md
+@@ -0,0 +1,57 @@
++---
++allowed-tools: Read, Write, Bash, Glob, WebFetch
++argument-hint: <input> [lang]
++description: Convert blog posts to Medium-ready HTML format with image upload markers
++---
++
++# Medium Article Converter
++
++Convert blog posts to Medium-ready format with proper HTML structure and image handling.
++
++**Usage:** `$ARGUMENTS`
++
++**Examples:**
++```bash
++/publisher:medium my-post           # Default English
++/publisher:medium my-post ja        # Japanese
++/publisher:medium article.md        # From file path
++/publisher:medium https://blog.com/post  # From URL
++```
++
++**Process:**
++
++1. **Parse Input & Detect Source**
++   - File path, URL, or blog post slug
++   - Optional language parameter (en/ja)
++
++2. **Universal Input Detection**
++   - **File**: Read markdown, PDF, HTML, or text
++   - **URL**: WebFetch to retrieve content
++   - **Slug**: Search codebase for blog post
++
++3. **Convert to Medium Format**
++   - Parse markdown and extract frontmatter
++   - Convert to clean HTML suitable for Medium
++   - Preserve headers, lists, code blocks, quotes
++   - Add image upload markers for diagrams
++   - Include image paths for easy upload reference
++
++4. **Create HTML Preview File**
++   - Generate `medium-article-[LANG].html` preview
++   - Include one-click copy button
++   - Add image upload instructions with file paths
++   - Use Medium-style formatting and colors
++
++5. **Open in Browser**
++   - Open HTML preview file
++   - Open Medium editor (https://medium.com/new-story)
++   - User can copy HTML and paste into Medium
++   - Follow image markers to upload diagrams
++
++**Output:**
++- HTML preview file with copy button
++- Clear image upload markers
++- File paths shown for each image
++- Ready to paste into Medium editor
++
++**Note**: Works universally - no dependencies required, just Read, Write, and Bash tools.
+diff --git a/cli-tool/components/commands/marketing/publisher-x.md b/cli-tool/components/commands/marketing/publisher-x.md
+new file mode 100644
+index 0000000..8192207
+--- /dev/null
++++ b/cli-tool/components/commands/marketing/publisher-x.md
+@@ -0,0 +1,132 @@
++---
++allowed-tools: Read, Write, Bash, Glob, WebFetch
++argument-hint: <input> [lang]
++description: Generate copy-pastable X/Twitter threads from blog posts, articles, PDFs, or URLs with 3 format options
++---
++
++# X/Twitter Thread Generator
++
++Generate a copy-pastable X thread from any content source - blog posts, articles, PDFs, URLs, or plain text.
++
++**Usage:** `$ARGUMENTS`
++
++**Process:**
++
++1. **Parse Input Arguments**
++   - Extract content input and optional language parameter
++   - Examples:
++     - `2025-10-06-my-post` (slug only, default English)
++     - `2025-10-06-my-post ja` (slug with Japanese)
++     - `path/to/article.md` (file path)
++     - `https://myblog.com/post` (URL)
++     - `docs/whitepaper.pdf en` (PDF with language)
++
++2. **Universal Input Detection**
++
++   **If input looks like a file path** (contains `/` or file extension):
++   - Use Read tool to check if file exists
++   - Detect format by extension:
++     - `.md` / `.mdx` → Parse markdown with frontmatter (extract title, description, body, metadata)
++     - `.pdf` → Inform user PDF parsing is limited, suggest converting to markdown first
++     - `.docx` → Inform user DOCX parsing is limited, suggest converting to markdown first
++     - `.html` → Read and extract main content, strip HTML tags
++     - `.txt` → Read as plain text
++     - `.json` → Parse JSON and extract relevant fields
++   - Extract: title, description, body content, metadata
++
++   **If input looks like a URL** (starts with `http://` or `https://`):
++   - Use WebFetch tool to retrieve the page
++   - Prompt: "Extract the main article content, title, and description from this page"
++   - Parse and clean the text
++
++   **If input is a slug** (no `/` and no protocol):
++   - Search codebase using Glob: `**/*${input}*.md`
++   - Common patterns to check:
++     - `src/content/blog/posts/{en,ja}/*${input}*.md`
++     - `content/blog/*${input}*.md`
++     - `posts/*${input}*.md`
++     - `blog/*${input}*.md`
++   - If language specified, prioritize matching language folder
++   - Use Read tool to parse markdown file with frontmatter
++
++3. **Determine Language** (default: English):
++   - If user explicitly specifies "ja" → Japanese
++   - If user explicitly specifies "en" → English
++   - If file path contains `/ja/` → Japanese
++   - If content appears to be in Japanese → Japanese
++   - Otherwise → English
++
++4. **Generate THREE versions** in the target language:
++
++   **Version 1: Thread (5-8 posts)**
++   - Professional and engaging tone
++   - Break into digestible posts (max 280 chars each)
++
++   **Version 2: Single Long (Premium)**
++   - Structured format with clear sections
++   - **For Japanese**: Use 【brackets】: 【とは】【誰のため】【主な特徴】【次にすべきこと】
++   - **For English**: Use headers: **What it is:** **Who it's for:** **Key features:** **What to do next:**
++
++   **Version 3: Single Short (~280 chars)**
++   - Concise announcement
++   - 2-3 key benefits with emojis
++   - Links and hashtags
++
++5. **Display all versions** to the user in terminal:
++   - Show thread posts with character counts
++   - Show single long version
++   - Show single short version
++   - Format for easy copy-pasting
++
++6. **Create tri-format HTML preview file** using Write tool:
++   - **IMPORTANT**: Check if file exists first: `ls -la x-thread-[LANG].html 2>&1`
++   - If file exists, use Read tool first (even just 1 line): `Read('x-thread-[LANG].html', limit=1)`
++   - Then use Write tool to create/update: `x-thread-[LANG].html` in user's current directory
++   - **Include THREE tabs with tab switcher UI**:
++     - **Tab 1: Thread** - 5-8 posts with individual "Copy Post" buttons
++     - **Tab 2: Single Long** - Structured format with sections, one "Copy" button
++     - **Tab 3: Single Short** - Concise version (~280 chars), one "Copy" button
++   - Use X branding (black theme)
++   - Tab switcher at top for easy navigation
++   - Use Bash tool to open: `open x-thread-[LANG].html && open https://x.com/compose/post`
++
++---
++
++## X Thread Guidelines
++
++### Thread Structure (5-8 tweets):
++
++1. **Hook Tweet** (Tweet 1/X)
++   - Grab attention with a contrarian statement, stat, or bold claim
++   - Don't give away everything - create curiosity
++   - NO hashtags or links in first tweet (better algorithm reach)
++   - Max 280 chars including thread indicator
++
++2. **Problem/Context Tweets** (Tweets 2-3/X)
++   - Set up the problem or context
++   - Use specific data points from the blog
++   - Keep each tweet to ONE idea
++   - Max 280 chars each
++
++3. **Insight Tweets** (Tweets 4-6/X)
++   - Share 3-5 key insights from the blog
++   - Use bullet points (•) or numbered lists
++   - Include specific examples or stats
++   - Make each tweet self-contained
++   - Max 280 chars each
++
++4. **CTA Tweet** (Final tweet)
++   - Link to the full article
++   - Simple CTA: "Read the full guide:" or "Full breakdown:"
++   - Can include 2-3 relevant hashtags here
++   - Encourage engagement: "What's your take?"
++
++**Thread Numbering:**
++- Include "(1/6)" style numbering in EVERY tweet
++- Count MUST be accurate
++- Place at the end of each tweet
++
++**Character Limits:**
++- Each post: MAX 280 characters (including thread number)
++- Account for URL shortening: URLs = 23 chars on X
++- Leave buffer of 10-15 chars for safety
+diff --git a/cli-tool/components/commands/setup/vercel-analytics.md b/cli-tool/components/commands/setup/vercel-analytics.md
+new file mode 100644
+index 0000000..ed6aa43
+--- /dev/null
++++ b/cli-tool/components/commands/setup/vercel-analytics.md
+@@ -0,0 +1,66 @@
++---
++allowed-tools: Read, Write, Edit, Bash
++argument-hint:
++description: Set up Vercel Analytics and Speed Insights for React/Vite projects
++---
++
++# Vercel Analytics Setup
++
++Automatically configure Vercel Analytics and Speed Insights for your React/Vite project.
++
++**Usage:** `/vercel-analytics` (no arguments needed)
++
++**What it does:**
++- Installs @vercel/analytics and @vercel/speed-insights packages
++- Adds components to your React app
++- Configures SPA routing for Vercel deployment
++- Fixes 404 errors for direct route access
++
++**Process:**
++
++1. **Install Vercel Packages**
++   ```bash
++   npm install @vercel/analytics @vercel/speed-insights
++   ```
++
++2. **Detect Main App File**
++   - Search for main React entry point:
++     - `src/App.tsx` or `src/App.jsx`
++     - `src/main.tsx` or `src/main.jsx`
++   - Read file to determine current structure
++
++3. **Add Analytics Components**
++   - Import Analytics from '@vercel/analytics/react'
++   - Import SpeedInsights from '@vercel/speed-insights/react'
++   - Add both components to the main App component
++   - Use `/react` imports (not `/next`)
++
++4. **Create vercel.json Configuration**
++   - Create `vercel.json` in project root
++   - Add SPA rewrite rules:
++   ```json
++   {
++     "rewrites": [
++       { "source": "/(.*)", "destination": "/index.html" }
++     ]
++   }
++   ```
++   - This ensures all routes serve index.html (fixes 404s)
++
++5. **Verify Setup**
++   - Confirm components are properly imported
++   - Check vercel.json exists and is valid
++   - Display success message with next steps
++
++**Expected Outcome:**
++- ✅ Analytics tracking active
++- ✅ Speed Insights monitoring configured
++- ✅ SPA routing works correctly on Vercel
++- ✅ No 404 errors on direct route access
++
++**Next Steps:**
++1. Deploy to Vercel: `vercel deploy`
++2. View analytics at: https://vercel.com/dashboard/analytics
++3. Check Speed Insights: https://vercel.com/dashboard/speed-insights
++
++**Note**: Works with React, Vite, Create React App, and other SPA frameworks.
+-- 
+2.43.0
+

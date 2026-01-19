@@ -85,6 +85,7 @@ Pass raw text with parentheses, hashtags, etc. directly - the command handles al
    - **For Japanese**: Use professional Japanese business tone (敬語), include article link
    - Use actual blog content and key points
    - Make it contextual and intelligent, not template-based
+   - **APPLY HUMANIZATION** (see Humanization Guidelines below)
 
 5. **Handle file attachment**:
 
@@ -470,6 +471,48 @@ Generate LinkedIn commentary that:
 - ✅ Incorporates actual insights/stats from the blog post (not generic)
 
 **IMPORTANT**: Read the blog post content to extract real insights, not generic placeholders!
+
+---
+
+## Humanization Guidelines
+
+**CRITICAL**: All generated content MUST sound human, not AI-generated. Apply the `/humanizer` skill principles:
+
+### Patterns to AVOID:
+
+1. **Inflated significance** - Don't say "stands as a testament to", "pivotal moment", "game-changer", "transformative"
+2. **Promotional language** - Avoid "groundbreaking", "revolutionary", "stunning", "breathtaking", "cutting-edge"
+3. **AI vocabulary overuse** - Cut "Additionally", "Moreover", "delve", "landscape", "tapestry", "crucial", "foster"
+4. **Vague attributions** - No "experts believe", "industry reports show" without specific citations
+5. **Superficial -ing phrases** - Remove "highlighting the importance of", "showcasing the potential", "underscoring"
+6. **Rule of three abuse** - Don't force "innovation, inspiration, and industry insights" patterns
+7. **Negative parallelisms** - Avoid "It's not just X, it's Y" constructions
+8. **Em dash overuse** - Use sparingly, prefer commas or periods
+9. **Sycophantic tone** - No "Great question!", "You're absolutely right!", excessive enthusiasm
+10. **Generic conclusions** - Cut "The future looks bright", "exciting times ahead", "journey toward excellence"
+
+### What TO DO:
+
+- **Be specific** - Use actual numbers, names, dates from the blog content
+- **Vary rhythm** - Mix short punchy sentences with longer explanatory ones
+- **Have opinions** - React to the data, don't just report it neutrally
+- **Add personality** - Sound like a real person wrote this, with genuine insights
+- **Use simple verbs** - "is" beats "serves as", "has" beats "boasts", "shows" beats "demonstrates"
+- **Keep it concrete** - Replace vague claims with specific examples from the blog
+
+### Before/After Examples:
+
+❌ "This groundbreaking approach serves as a testament to innovation, ensuring developers accomplish goals efficiently while fostering collaboration"
+
+✅ "This approach cut our review time from 60 to 6 minutes. Our team shipped the feature in 3 days instead of 2 weeks."
+
+❌ "The landscape of software development is evolving rapidly, and it's crucial to delve into these transformative methodologies"
+
+✅ "Most teams still review AI code the old way. That's why they're not seeing the speed gains."
+
+❌ "Additionally, this highlights the pivotal role of..."
+
+✅ "Here's what actually made the difference:"
 
 ---
 

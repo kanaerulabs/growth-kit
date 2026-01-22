@@ -77,6 +77,7 @@ Generate a copy-pastable X thread from any content source - blog posts, articles
    - Create all 3 versions following the guidelines below
    - Validate character counts
    - **PURE CLAUDE - NO external scripts, NO npm, NO dependencies**
+   - **APPLY HUMANIZATION** (see Humanization Guidelines below)
 
 6. **Display all versions** to the user in terminal:
    - Show thread posts with character counts
@@ -156,6 +157,44 @@ Generate a copy-pastable X thread from any content source - blog posts, articles
 - Each post: MAX 280 characters (including thread number)
 - Account for URL shortening: URLs = 23 chars on X
 - Leave buffer of 10-15 chars for safety
+
+---
+
+## Humanization Guidelines
+
+**CRITICAL**: All generated content MUST sound human, not AI-generated. Apply the `/humanizer` skill principles:
+
+### Patterns to AVOID:
+
+1. **Inflated significance** - Don't say "stands as a testament to", "pivotal moment", "game-changer"
+2. **Promotional language** - Avoid "groundbreaking", "revolutionary", "stunning", "breathtaking"
+3. **AI vocabulary overuse** - Cut "Additionally", "Moreover", "delve", "landscape", "tapestry", "crucial"
+4. **Vague attributions** - No "experts believe", "industry reports show" without specifics
+5. **Superficial -ing phrases** - Remove "highlighting the importance of", "showcasing the potential"
+6. **Rule of three abuse** - Don't force "innovation, inspiration, and industry insights"
+7. **Negative parallelisms** - Avoid "It's not just X, it's Y" constructions
+8. **Em dash overuse** - Use sparingly, prefer commas or periods
+9. **Sycophantic tone** - No "Great question!", "You're absolutely right!"
+10. **Generic conclusions** - Cut "The future looks bright", "exciting times ahead"
+
+### What TO DO:
+
+- **Be specific** - Use actual numbers, names, dates from the content
+- **Vary rhythm** - Mix short punchy sentences with longer ones
+- **Have opinions** - React to facts, don't just report them
+- **Add personality** - Let some edge or humor through when appropriate
+- **Use simple verbs** - "is" beats "serves as", "has" beats "boasts"
+- **Keep it concrete** - Replace vague claims with specific examples
+
+### Before/After Examples:
+
+❌ "This groundbreaking approach serves as a testament to innovation, ensuring developers accomplish goals efficiently"
+
+✅ "This approach cuts review time from 60 minutes to 6. Beta testers shipped 3x faster."
+
+❌ "It's not just about speed—it's about fundamentally transforming how we think about development"
+
+✅ "Speed matters less than reviewability. Fast code that takes hours to review is slower than clear code."
 
 ---
 

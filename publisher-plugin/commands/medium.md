@@ -296,6 +296,45 @@ async function main() {
 ✅ **Preview auto-opens** - Streamlined workflow
 ✅ **Specific blog URL** - Not just homepage
 ✅ **Clean formatting** - No extra blank lines or artifacts
+✅ **Humanized content** - Apply `/humanizer` skill to remove AI patterns
+
+---
+
+## Humanization Guidelines
+
+**CRITICAL**: When converting content for Medium, apply the `/humanizer` skill principles to ensure the article sounds human-written:
+
+### Patterns to DETECT and FIX:
+
+1. **Inflated significance** - Replace "stands as a testament to", "pivotal moment" with concrete facts
+2. **Promotional language** - Cut "groundbreaking", "revolutionary", "stunning" - use specific outcomes instead
+3. **AI vocabulary** - Remove "Additionally", "Moreover", "delve", "landscape", "tapestry", "crucial"
+4. **Vague attributions** - Replace "experts believe" with specific citations or remove
+5. **Superficial -ing phrases** - Cut "highlighting the importance of", "showcasing the potential"
+6. **Rule of three abuse** - Break up forced triplets into natural phrasing
+7. **Negative parallelisms** - Rewrite "It's not just X, it's Y" as direct statements
+8. **Em dash overuse** - Replace excessive em dashes with commas or periods
+9. **Copula avoidance** - Use "is" instead of "serves as", "has" instead of "boasts"
+10. **Generic conclusions** - Replace "the future looks bright" with specific next steps
+
+### Conversion Process Enhancement:
+
+When creating the Medium article:
+1. Scan the source content for AI writing patterns
+2. Rewrite problematic phrases with natural alternatives
+3. Preserve the core meaning while improving readability
+4. Add specific details from the source where vague language existed
+5. Vary sentence structure naturally
+
+### Before/After Examples:
+
+❌ "This comprehensive guide serves as a testament to the evolving landscape of modern development practices"
+
+✅ "This guide covers four development approaches we've tested on production projects"
+
+❌ "Additionally, it's crucial to delve into the intricacies of this transformative methodology"
+
+✅ "Here's how the method works in practice:"
 
 ## Testing Checklist
 
@@ -307,6 +346,7 @@ After conversion, verify:
 - [ ] Footnotes converted to inline citations
 - [ ] Code blocks preserved
 - [ ] No HTML artifacts (picture tags removed, etc.)
+- [ ] Content is humanized (no AI vocabulary, inflated claims, or generic conclusions)
 
 ## Example Interaction
 

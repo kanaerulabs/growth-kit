@@ -164,18 +164,68 @@ Generate a copy-pastable X thread from any content source - blog posts, articles
 
 **CRITICAL**: All generated content MUST sound human, not AI-generated. Apply the `/humanizer` skill principles:
 
+### Banned Words List
+
+Never use these AI-tell words:
+
+**Significance inflation:** unprecedented, remarkable, groundbreaking, revolutionary, transformative, game-changing, paradigm-shifting, cutting-edge, state-of-the-art, best-in-class
+
+**Empty intensifiers:** truly, deeply, incredibly, extremely, absolutely, fundamentally, significantly, dramatically, tremendously, overwhelmingly
+
+**AI connector words:** Additionally, Moreover, Furthermore, Consequently, Nevertheless, Notwithstanding, Accordingly, Subsequently, Henceforth
+
+**AI favorite verbs:** delve, utilize, leverage, optimize, streamline, facilitate, spearhead, synergize, revolutionize, empower
+
+**Vague abstractions:** landscape, tapestry, ecosystem, paradigm, framework, infrastructure, methodology, holistic, comprehensive, robust
+
+**Corporate filler:** crucial, pivotal, vital, essential, key, critical, paramount, instrumental, imperative, indispensable
+
+**AI adjectives:** seamless, intuitive, innovative, dynamic, agile, scalable, sustainable, impactful, actionable, best-practice
+
+### Banned Phrases List
+
+Never use these constructions:
+
+- "In a world where..."
+- "At the end of the day..."
+- "It goes without saying..."
+- "Stands as a testament to..."
+- "It's not just X, it's Y"
+- "The fact of the matter is..."
+- "In terms of..."
+- "When it comes to..."
+- "Take your X to the next level"
+- "Unlock the power of..."
+- "The future of X is here"
+- "X is the new Y"
+- "Experts agree that..."
+- "Studies show that..." (without citation)
+- "In today's fast-paced world..."
+- "Now more than ever..."
+- "Let's dive in..."
+- "Without further ado..."
+- "Here's the thing..."
+- "The bottom line is..."
+
+### Structural Rules
+
+1. **Active voice only** - "We built this" not "This was built"
+2. **Direct address** - Use "you" and "your" to speak to readers
+3. **Short sentences** - Aim for 15 words or fewer on average
+4. **No setup phrases** - Cut "In conclusion", "To summarize", "As mentioned"
+5. **Specific over general** - Numbers, names, dates beat vague claims
+6. **Simple verbs** - "is" beats "serves as", "has" beats "boasts", "shows" beats "demonstrates"
+
 ### Patterns to AVOID:
 
 1. **Inflated significance** - Don't say "stands as a testament to", "pivotal moment", "game-changer"
 2. **Promotional language** - Avoid "groundbreaking", "revolutionary", "stunning", "breathtaking"
-3. **AI vocabulary overuse** - Cut "Additionally", "Moreover", "delve", "landscape", "tapestry", "crucial"
-4. **Vague attributions** - No "experts believe", "industry reports show" without specifics
-5. **Superficial -ing phrases** - Remove "highlighting the importance of", "showcasing the potential"
-6. **Rule of three abuse** - Don't force "innovation, inspiration, and industry insights"
-7. **Negative parallelisms** - Avoid "It's not just X, it's Y" constructions
-8. **Em dash overuse** - Use sparingly, prefer commas or periods
-9. **Sycophantic tone** - No "Great question!", "You're absolutely right!"
-10. **Generic conclusions** - Cut "The future looks bright", "exciting times ahead"
+3. **Vague attributions** - No "experts believe", "industry reports show" without specifics
+4. **Superficial -ing phrases** - Remove "highlighting the importance of", "showcasing the potential"
+5. **Rule of three abuse** - Don't force "innovation, inspiration, and industry insights"
+6. **Em dash overuse** - Use sparingly, prefer commas or periods
+7. **Sycophantic tone** - No "Great question!", "You're absolutely right!"
+8. **Generic conclusions** - Cut "The future looks bright", "exciting times ahead"
 
 ### What TO DO:
 
@@ -183,7 +233,6 @@ Generate a copy-pastable X thread from any content source - blog posts, articles
 - **Vary rhythm** - Mix short punchy sentences with longer ones
 - **Have opinions** - React to facts, don't just report them
 - **Add personality** - Let some edge or humor through when appropriate
-- **Use simple verbs** - "is" beats "serves as", "has" beats "boasts"
 - **Keep it concrete** - Replace vague claims with specific examples
 
 ### Before/After Examples:
@@ -195,6 +244,14 @@ Generate a copy-pastable X thread from any content source - blog posts, articles
 ❌ "It's not just about speed—it's about fundamentally transforming how we think about development"
 
 ✅ "Speed matters less than reviewability. Fast code that takes hours to review is slower than clear code."
+
+❌ "In today's fast-paced world, it's crucial to leverage cutting-edge solutions"
+
+✅ "Most teams waste 4 hours a day on code review. Here's how to fix that."
+
+❌ "Let's dive into this comprehensive guide that will revolutionize your workflow"
+
+✅ "This guide shows three techniques. The first one saved us 12 hours last week."
 
 ---
 

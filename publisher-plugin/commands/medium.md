@@ -304,27 +304,78 @@ async function main() {
 
 **CRITICAL**: When converting content for Medium, apply the `/humanizer` skill principles to ensure the article sounds human-written:
 
+### Banned Words List
+
+Never use these AI-tell words:
+
+**Significance inflation:** unprecedented, remarkable, groundbreaking, revolutionary, transformative, game-changing, paradigm-shifting, cutting-edge, state-of-the-art, best-in-class
+
+**Empty intensifiers:** truly, deeply, incredibly, extremely, absolutely, fundamentally, significantly, dramatically, tremendously, overwhelmingly
+
+**AI connector words:** Additionally, Moreover, Furthermore, Consequently, Nevertheless, Notwithstanding, Accordingly, Subsequently, Henceforth
+
+**AI favorite verbs:** delve, utilize, leverage, optimize, streamline, facilitate, spearhead, synergize, revolutionize, empower
+
+**Vague abstractions:** landscape, tapestry, ecosystem, paradigm, framework, infrastructure, methodology, holistic, comprehensive, robust
+
+**Corporate filler:** crucial, pivotal, vital, essential, key, critical, paramount, instrumental, imperative, indispensable
+
+**AI adjectives:** seamless, intuitive, innovative, dynamic, agile, scalable, sustainable, impactful, actionable, best-practice
+
+### Banned Phrases List
+
+Never use these constructions:
+
+- "In a world where..."
+- "At the end of the day..."
+- "It goes without saying..."
+- "Stands as a testament to..."
+- "It's not just X, it's Y"
+- "The fact of the matter is..."
+- "In terms of..."
+- "When it comes to..."
+- "Take your X to the next level"
+- "Unlock the power of..."
+- "The future of X is here"
+- "X is the new Y"
+- "Experts agree that..."
+- "Studies show that..." (without citation)
+- "In today's fast-paced world..."
+- "Now more than ever..."
+- "Let's dive in..."
+- "Without further ado..."
+- "Here's the thing..."
+- "The bottom line is..."
+
+### Structural Rules
+
+1. **Active voice only** - "We built this" not "This was built"
+2. **Direct address** - Use "you" and "your" to speak to readers
+3. **Short sentences** - Aim for 15 words or fewer on average
+4. **No setup phrases** - Cut "In conclusion", "To summarize", "As mentioned"
+5. **Specific over general** - Numbers, names, dates beat vague claims
+6. **Simple verbs** - "is" beats "serves as", "has" beats "boasts", "shows" beats "demonstrates"
+
 ### Patterns to DETECT and FIX:
 
 1. **Inflated significance** - Replace "stands as a testament to", "pivotal moment" with concrete facts
 2. **Promotional language** - Cut "groundbreaking", "revolutionary", "stunning" - use specific outcomes instead
-3. **AI vocabulary** - Remove "Additionally", "Moreover", "delve", "landscape", "tapestry", "crucial"
-4. **Vague attributions** - Replace "experts believe" with specific citations or remove
-5. **Superficial -ing phrases** - Cut "highlighting the importance of", "showcasing the potential"
-6. **Rule of three abuse** - Break up forced triplets into natural phrasing
-7. **Negative parallelisms** - Rewrite "It's not just X, it's Y" as direct statements
-8. **Em dash overuse** - Replace excessive em dashes with commas or periods
-9. **Copula avoidance** - Use "is" instead of "serves as", "has" instead of "boasts"
-10. **Generic conclusions** - Replace "the future looks bright" with specific next steps
+3. **Vague attributions** - Replace "experts believe" with specific citations or remove
+4. **Superficial -ing phrases** - Cut "highlighting the importance of", "showcasing the potential"
+5. **Rule of three abuse** - Break up forced triplets into natural phrasing
+6. **Negative parallelisms** - Rewrite "It's not just X, it's Y" as direct statements
+7. **Em dash overuse** - Replace excessive em dashes with commas or periods
+8. **Generic conclusions** - Replace "the future looks bright" with specific next steps
 
 ### Conversion Process Enhancement:
 
 When creating the Medium article:
-1. Scan the source content for AI writing patterns
+1. Scan the source content for AI writing patterns against the banned words/phrases lists
 2. Rewrite problematic phrases with natural alternatives
 3. Preserve the core meaning while improving readability
 4. Add specific details from the source where vague language existed
 5. Vary sentence structure naturally
+6. Apply structural rules (active voice, direct address, short sentences)
 
 ### Before/After Examples:
 
@@ -335,6 +386,14 @@ When creating the Medium article:
 ❌ "Additionally, it's crucial to delve into the intricacies of this transformative methodology"
 
 ✅ "Here's how the method works in practice:"
+
+❌ "In today's fast-paced world, it's essential to leverage cutting-edge solutions to stay competitive"
+
+✅ "Teams using this method ship 40% faster. Here's the setup."
+
+❌ "This revolutionary framework will fundamentally transform your development workflow"
+
+✅ "This framework changed how we write code. Setup takes 10 minutes."
 
 ## Testing Checklist
 

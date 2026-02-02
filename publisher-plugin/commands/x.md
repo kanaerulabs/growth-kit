@@ -166,6 +166,8 @@ Generate a copy-pastable X thread from any content source - blog posts, articles
 
 ### Banned Words List
 
+Matching is case-insensitive: entries like "Additionally" match "additionally" and "ADDITIONALLY".
+
 Never use these AI-tell words:
 
 **Significance inflation:** unprecedented, remarkable, groundbreaking, revolutionary, transformative, game-changing, paradigm-shifting, cutting-edge, state-of-the-art, best-in-class
@@ -183,6 +185,8 @@ Never use these AI-tell words:
 **AI adjectives:** seamless, intuitive, innovative, dynamic, agile, scalable, sustainable, impactful, actionable, best-practice
 
 ### Banned Phrases List
+
+Matching is case-insensitive: normalize case when checking phrases.
 
 Never use these constructions:
 
@@ -208,6 +212,8 @@ Never use these constructions:
 - "The bottom line is..."
 
 ### Structural Rules
+
+Enforce whole-word matching case-insensitively; title-cased entries in the lists above are unambiguous.
 
 1. **Active voice only** - "We built this" not "This was built"
 2. **Direct address** - Use "you" and "your" to speak to readers

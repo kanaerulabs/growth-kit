@@ -478,18 +478,70 @@ Generate LinkedIn commentary that:
 
 **CRITICAL**: All generated content MUST sound human, not AI-generated. Apply the `/humanizer` skill principles:
 
+### Banned Words List
+
+Never use these AI-tell words:
+
+**Significance inflation:** unprecedented, remarkable, groundbreaking, revolutionary, transformative, game-changing, paradigm-shifting, cutting-edge, state-of-the-art, best-in-class
+
+**Empty intensifiers:** truly, deeply, incredibly, extremely, absolutely, fundamentally, significantly, dramatically, tremendously, overwhelmingly
+
+**AI connector words:** Additionally, Moreover, Furthermore, Consequently, Nevertheless, Notwithstanding, Accordingly, Subsequently, Henceforth
+
+**AI favorite verbs:** delve, utilize, leverage, optimize, streamline, facilitate, spearhead, synergize, revolutionize, empower
+
+**Vague abstractions:** landscape, tapestry, ecosystem, paradigm, framework, infrastructure, methodology, holistic, comprehensive, robust
+
+**Corporate filler:** crucial, pivotal, vital, essential, key, critical, paramount, instrumental, imperative, indispensable, foster
+
+**AI adjectives:** seamless, intuitive, innovative, dynamic, agile, scalable, sustainable, impactful, actionable, best-practice
+
+### Banned Phrases List
+
+Never use these constructions:
+
+- "In a world where..."
+- "At the end of the day..."
+- "It goes without saying..."
+- "Stands as a testament to..."
+- "It's not just X, it's Y"
+- "The fact of the matter is..."
+- "In terms of..."
+- "When it comes to..."
+- "Take your X to the next level"
+- "Unlock the power of..."
+- "The future of X is here"
+- "X is the new Y"
+- "Experts agree that..."
+- "Studies show that..." (without citation)
+- "In today's fast-paced world..."
+- "Now more than ever..."
+- "Let's dive in..."
+- "Without further ado..."
+- "Here's the thing..."
+- "The bottom line is..."
+- "I'm excited to share..."
+- "Thrilled to announce..."
+
+### Structural Rules
+
+1. **Active voice only** - "We built this" not "This was built"
+2. **Direct address** - Use "you" and "your" to speak to readers
+3. **Short sentences** - Aim for 15 words or fewer on average
+4. **No setup phrases** - Cut "In conclusion", "To summarize", "As mentioned"
+5. **Specific over general** - Numbers, names, dates beat vague claims
+6. **Simple verbs** - "is" beats "serves as", "has" beats "boasts", "shows" beats "demonstrates"
+
 ### Patterns to AVOID:
 
-1. **Inflated significance** - Don't say "stands as a testament to", "pivotal moment", "game-changer", "transformative"
-2. **Promotional language** - Avoid "groundbreaking", "revolutionary", "stunning", "breathtaking", "cutting-edge"
-3. **AI vocabulary overuse** - Cut "Additionally", "Moreover", "delve", "landscape", "tapestry", "crucial", "foster"
-4. **Vague attributions** - No "experts believe", "industry reports show" without specific citations
-5. **Superficial -ing phrases** - Remove "highlighting the importance of", "showcasing the potential", "underscoring"
-6. **Rule of three abuse** - Don't force "innovation, inspiration, and industry insights" patterns
-7. **Negative parallelisms** - Avoid "It's not just X, it's Y" constructions
-8. **Em dash overuse** - Use sparingly, prefer commas or periods
-9. **Sycophantic tone** - No "Great question!", "You're absolutely right!", excessive enthusiasm
-10. **Generic conclusions** - Cut "The future looks bright", "exciting times ahead", "journey toward excellence"
+1. **Inflated significance** - Don't say "stands as a testament to", "pivotal moment", "game-changer"
+2. **Promotional language** - Avoid "groundbreaking", "revolutionary", "stunning", "breathtaking"
+3. **Vague attributions** - No "experts believe", "industry reports show" without specific citations
+4. **Superficial -ing phrases** - Remove "highlighting the importance of", "showcasing the potential"
+5. **Rule of three abuse** - Don't force "innovation, inspiration, and industry insights" patterns
+6. **Em dash overuse** - Use sparingly, prefer commas or periods
+7. **Sycophantic tone** - No "Great question!", "You're absolutely right!", excessive enthusiasm
+8. **Generic conclusions** - Cut "The future looks bright", "exciting times ahead", "journey toward excellence"
 
 ### What TO DO:
 
@@ -497,7 +549,6 @@ Generate LinkedIn commentary that:
 - **Vary rhythm** - Mix short punchy sentences with longer explanatory ones
 - **Have opinions** - React to the data, don't just report it neutrally
 - **Add personality** - Sound like a real person wrote this, with genuine insights
-- **Use simple verbs** - "is" beats "serves as", "has" beats "boasts", "shows" beats "demonstrates"
 - **Keep it concrete** - Replace vague claims with specific examples from the blog
 
 ### Before/After Examples:
@@ -513,6 +564,10 @@ Generate LinkedIn commentary that:
 ❌ "Additionally, this highlights the pivotal role of..."
 
 ✅ "Here's what actually made the difference:"
+
+❌ "I'm excited to share this transformative journey that will revolutionize how you think about development"
+
+✅ "We tried 4 different approaches over 6 months. Only one worked. Here's what we learned."
 
 ---
 
